@@ -1754,7 +1754,7 @@ const Home = (props: HomeProps) => {
                       className={
                         shouldMint ? "Outside-Mint-btn" : "Outside-Mint-btn"
                       }
-                      onClick={openWhitelist}
+                      onClick={openUpdates}
                     >
                       Mint
                     </button>
