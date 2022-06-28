@@ -4,12 +4,7 @@ export const MAGIC_HAT_PROGRAM_V2_ID = new PublicKey(
   "JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha"
 );
 
-export const MAGIC_HAT_CREATOR_KEYPAIR: any = Uint8Array.from([
-  9, 148, 84, 119, 156, 88, 245, 36, 86, 216, 49, 118, 176, 163, 100, 47, 160,
-  41, 82, 222, 95, 17, 155, 11, 166, 13, 68, 40, 91, 248, 164, 34, 193, 38, 30,
-  236, 231, 226, 37, 186, 51, 51, 255, 25, 120, 144, 213, 110, 185, 12, 165, 73,
-  213, 136, 110, 248, 59, 31, 116, 171, 205, 115, 130, 192,
-]);
+export const MAGIC_HAT_CREATOR_KEYPAIR: any = [];
 
 export const MAGIC_HAT_CREATOR = new PublicKey(
   "H18mLh2oW73KBqRZ53La54qBafEaXBm9bXVefhKnMfXH"

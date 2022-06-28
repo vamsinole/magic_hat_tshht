@@ -1524,17 +1524,19 @@ const Home = (props: HomeProps) => {
           setShowAlphaRoom(true);
           setShowMobileDoor(false);
         }, 600);
-      } else if (mobileDoor === "TEAM") {
-        setClassNameState("main-bg-after-door-open black-bg");
-        setLogoAlphaLoading(true);
-        setTimeout(function () {
-          setLogoAlphaLoading(false);
-          setClassNameState("team-room");
-          setShowTeamRoom(true);
-          setShowAlphaRoom(false);
-          setShowMobileDoor(false);
-        }, 600);
-      } else {
+      } 
+      // else if (mobileDoor === "TEAM") {
+      //   setClassNameState("main-bg-after-door-open black-bg");
+      //   setLogoAlphaLoading(true);
+      //   setTimeout(function () {
+      //     setLogoAlphaLoading(false);
+      //     setClassNameState("team-room");
+      //     setShowTeamRoom(true);
+      //     setShowAlphaRoom(false);
+      //     setShowMobileDoor(false);
+      //   }, 600);
+      // }
+      else {
         var arr = [
           "Patience is key",
           "Shh...",
@@ -1721,7 +1723,8 @@ const Home = (props: HomeProps) => {
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
-            <div onClick={() => openTeamRoom()} className="team-room-div"></div>
+            // <div onClick={() => openTeamRoom()} className="team-room-div"></div>
+            <div className="team-room-div"></div>
           )}
         {!logoLoading &&
           !showAlphaRoom &&
@@ -1802,7 +1805,6 @@ const Home = (props: HomeProps) => {
               <img
                 alt="Pizza"
                 src={PizzaImage}
-                // onClick={createWhitelistConfig}
                 onClick={() => showToaster(1)}
                 className="pizza-image"
               ></img>
