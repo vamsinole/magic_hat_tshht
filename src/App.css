@@ -3874,3 +3874,62 @@ form .button {
   position: absolute;
   bottom: 75px;
 }
+
+.whitelist-parent {
+  float: left;
+  width: 100%;
+  padding: 60px;
+  box-sizing: border-box;
+}
+
+.whitelist-create-button {
+  border-width: 0;
+  border-radius: 0px;
+  background-color: #78eefc;
+  cursor: pointer;
+  color: #305759;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  padding: 0;
+  display: inline-block;
+  margin-top: 10px;
+  padding: 12px 15px;
+  height: 45px;
+  width: 200px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.whitelist-account-create {
+  border-width: 0;
+  border-radius: 0px;
+  background-color: #78eefc;
+  cursor: pointer;
+  color: #305759;
+  font-weight: 600;
+  font-size: 14px;
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  padding: 0;
+  display: inline-block;
+  margin-top: 10px;
+  padding: 12px 15px;
+  height: 45px;
+  width: 200px;
+  box-sizing: border-box;
+  text-transform: uppercase;
+}
+
+.whitelist-texts {
+  float: left;
+  width: 100%;
+  text-align: center;
+  color: #78eefc;
+  font-size: 14px;
+  font-family: "Courier New", Courier, monospace;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}

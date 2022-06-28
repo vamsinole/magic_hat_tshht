@@ -161,6 +161,8 @@ const Home = (props: HomeProps) => {
   const [alreadyCalled, setAlreadyCalled] = useState(false);
   const [showMintInfo, setShowMintInfo] = useState(false);
   const [mintSuccessMessage, setMintSuccessMessage] = useState(false);
+  const [showWhitelist, setShowWhitelist] = useState(false);
+  const [createdWlCounts, setCreatedWlCounts] = useState(0);
   const [mintResponse, setMintResponse] = useState("");
   const [mintResponseType, setMintResponseType] = useState("");
   const [maxCount, setMaxCount] = useState<number>(3);
@@ -1173,43 +1175,59 @@ const Home = (props: HomeProps) => {
     try {
       const whitelist_instructions:any = [];
       const signers:any = anchor.web3.Keypair.fromSecretKey(MAGIC_HAT_CREATOR_KEYPAIR);
-      for (let index = 0; index < WHITELIST_WALLETS.length; index++) {
-        const element = WHITELIST_WALLETS[index];
-        const whitelisting_address = new PublicKey(element.wallet_address);
-        const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
-          [
-            Buffer.from(pdaSeed),
-            whitelisting_address.toBuffer(),
-            signers.publicKey!.toBuffer(),
-          ],
-          MAGIC_HAT_PROGRAM_V2_ID
-        );
-        const [whitelist_config_pda, bump] = await PublicKey.findProgramAddress(
-          [Buffer.from(pdaWhitelistSeed), signers.publicKey!.toBuffer()],
-          MAGIC_HAT_PROGRAM_V2_ID
-        );
-        whitelist_instructions.push(
-          await walletProgram.instruction.createWhitelistAccount(element.type,{
-              accounts: {
-                walletWhitelist: wallet_pda,
-                whitelistConfig: whitelist_config_pda,
-                whitelistedAddress: whitelisting_address,
-                magicHatCreator: signers.publicKey,
-                systemProgram: SystemProgram.programId,
-              },
-              signers: [signers]
-            }
-          )
-        );
+      if (createdWlCounts < WHITELIST_WALLETS.length) {
+        for (let index = createdWlCounts; index < createdWlCounts + 10; index++) {
+          const element = WHITELIST_WALLETS[index];
+          const whitelisting_address = new PublicKey(element.wallet_address);
+          const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
+            [
+              Buffer.from(pdaSeed),
+              whitelisting_address.toBuffer(),
+              signers.publicKey!.toBuffer(),
+            ],
+            MAGIC_HAT_PROGRAM_V2_ID
+          );
+          const [whitelist_config_pda, bump] = await PublicKey.findProgramAddress(
+            [Buffer.from(pdaWhitelistSeed), signers.publicKey!.toBuffer()],
+            MAGIC_HAT_PROGRAM_V2_ID
+          );
+          whitelist_instructions.push(
+            await walletProgram.instruction.createWhitelistAccount(element.type,{
+                accounts: {
+                  walletWhitelist: wallet_pda,
+                  whitelistConfig: whitelist_config_pda,
+                  whitelistedAddress: whitelisting_address,
+                  magicHatCreator: signers.publicKey,
+                  systemProgram: SystemProgram.programId,
+                },
+                signers: [signers]
+              }
+            )
+          );
+        }
+        let tr = new Transaction();
+        tr.add(whitelist_instructions);
+        const wallet_creation = await sendAndConfirmTransaction(
+          props.connection,
+          tr,
+          [signers]
+        )
+        setCreatedWlCounts(createdWlCounts + 10);
+        const whitelistAccounts: any =await walletProgram.account.walletWhitelist.all();
+        console.log(whitelistAccounts);
+        setAlertState({
+          open: true,
+          message: "Congratulations! 10 Whitelists created",
+          severity: "success",
+        });
       }
-      let tr = new Transaction();
-      tr.add(whitelist_instructions);
-      const wallet_creation = await sendAndConfirmTransaction(
-        props.connection,
-        tr,
-        [signers]
-      )
-      console.log(wallet_creation);
+      else {
+        setAlertState({
+          open: true,
+          message: "All Whitelists are already created",
+          severity: "error",
+        });
+      }
     } catch (error) {
       console.log("Transaction error: ", error);
     }
@@ -1555,6 +1573,10 @@ const Home = (props: HomeProps) => {
     setShowUpdates(true);
   };
 
+  const openWhitelist = async () => {
+    setShowWhitelist(true);
+  }
+
   const openFirstPhilAlphaRoom = async () => {
     setShowFirstPhil(true);
   };
@@ -1629,8 +1651,8 @@ const Home = (props: HomeProps) => {
           !logoAlphaLoading &&
           !isMobile && (
             <div
-              // onClick={() => showToaster(5)}
-              onClick={withdrawFunds}
+              onClick={() => showToaster(5)}
+              // onClick={withdrawFunds}
               className="stake-room-div"
             ></div>
           )}
@@ -1712,7 +1734,7 @@ const Home = (props: HomeProps) => {
                       className={
                         shouldMint ? "Outside-Mint-btn" : "Outside-Mint-btn"
                       }
-                      onClick={openUpdates}
+                      onClick={openWhitelist}
                     >
                       Mint
                     </button>
@@ -1747,8 +1769,8 @@ const Home = (props: HomeProps) => {
               <img
                 alt="Katana"
                 src={KatanaImage}
-                onClick={createWhitelistAccountMultiple}
-                // onClick={() => showToaster(2)}
+                // onClick={createWhitelistAccountMultiple}
+                onClick={() => showToaster(2)}
                 className="katana-image"
               ></img>
             </div>
@@ -1762,8 +1784,8 @@ const Home = (props: HomeProps) => {
               <img
                 alt="Pizza"
                 src={PizzaImage}
-                onClick={createWhitelistConfig}
-                // onClick={() => showToaster(1)}
+                // onClick={createWhitelistConfig}
+                onClick={() => showToaster(1)}
                 className="pizza-image"
               ></img>
             </div>
@@ -1823,7 +1845,8 @@ const Home = (props: HomeProps) => {
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
-            <div onClick={setCollection} className="light-flicker-image"></div>
+            // <div onClick={setCollection} className="light-flicker-image"></div>
+            <div className="light-flicker-image"></div>
           )}
         {!logoLoading &&
           !showAlphaRoom &&
@@ -2156,6 +2179,24 @@ const Home = (props: HomeProps) => {
             </OutsideClickHandler>
           </div>
         )}
+        {showWhitelist && 
+        <div>
+          <div className="Backdrop-other-mint">
+            <OutsideClickHandler onOutsideClick={closeUpdates}>
+              <div className="bigger-holo">
+                <div className="mint-inside-div">
+                  <div className="whitelist-parent">
+                    <button className="whitelist-create-button m-t-15" onClick={createWhitelistConfig}>Create Whitelist Config</button>
+                    <div className="pull-left full-width text-center m-t-15 m-b-15">
+                      <label className="whitelist-texts">Created Whitelist Accounts : {createdWlCounts}</label>
+                      <button className="whitelist-account-create" onClick={createWhitelistAccountMultiple}>Create 10 Accounts</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </OutsideClickHandler>
+          </div>
+        </div>}
         {showUpdates && (
           <div className="Backdrop-other-mint">
             <OutsideClickHandler onOutsideClick={closeUpdates}>
@@ -2419,7 +2460,7 @@ const Home = (props: HomeProps) => {
           </div>
         )}
       </div>
-      {/* <Snackbar
+      <Snackbar
         className="snack-bar"
         open={alertState.open}
         autoHideDuration={6000}
@@ -2432,7 +2473,7 @@ const Home = (props: HomeProps) => {
         >
           {alertState.message}
         </Alert>
-      </Snackbar> */}
+      </Snackbar>
     </div>
   );
 };
