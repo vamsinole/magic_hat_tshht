@@ -1741,7 +1741,7 @@ const Home = (props: HomeProps) => {
               {/* onClick={openUpdates} */}
               <div className="smaller-holo-updates">
                 {currentWl == "" && (
-                  <label className="typing-text">Mint in {time}</label>
+                  <label className="typing-text">Mint</label>
                 )}
                 {(
                   // <div className="Top-connected red">
