@@ -1174,6 +1174,13 @@ const Home = (props: HomeProps) => {
   const createWhitelistAccountMultiple = async () => {
     const walletProgram = await getProgram();
     try {
+      if (window.localStorage.getItem('created')) {
+        if (createdWlCounts == 0) {
+          if (parseInt(window.localStorage.getItem('created')!) > 0) {
+            setCreatedWlCounts(parseInt(window.localStorage.getItem('created')!));
+          }
+        }
+      }
       const whitelist_instructions:any = [];
       const signers:any = anchor.web3.Keypair.fromSecretKey(MAGIC_HAT_CREATOR_KEYPAIR);
       if (createdWlCounts < WHITELIST_WALLETS.length) {
@@ -1217,8 +1224,14 @@ const Home = (props: HomeProps) => {
           [[signers]]
         )
         setCreatedWlCounts(createdWlCounts + 10);
+        window.localStorage.setItem('created',(createdWlCounts + 10).toString());
         const whitelistAccounts: any =await walletProgram.account.walletWhitelist.all();
         console.log(whitelistAccounts);
+        for (let index = 0; index < whitelistAccounts.length; index++) {
+          const element = whitelistAccounts[index].account;
+          console.log(element.whitelistType);
+          console.log(element.whitelistedAddress.toBase58());
+        }
         setAlertState({
           open: true,
           message: "Congratulations! 10 Whitelists created",

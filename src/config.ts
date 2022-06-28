@@ -83,7 +83,7 @@ export const PUBLIC_TIME = 1656442800;
 export const COMMUNITY_TIME = 1656434400;
 
 export const GOG_PRICE = 1.69;
-export const OG_PRICE = 1.69;
+export const OG_PRICE = 1.90;
 export const WL_PRICE = 1.9;
 export const PUBLIC_PRICE = 2.29;
 
