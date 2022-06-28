@@ -47,7 +47,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "start": "export HTTPS=true&&SSL_CRT_FILE=secretalpha_io.crt&&SSL_KEY_FILE=secretalpha_io.key react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
