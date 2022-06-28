@@ -1191,7 +1191,8 @@ const Home = (props: HomeProps) => {
       if (createdWlCounts < WHITELIST_WALLETS.length) {
         for (let index = createdWlCounts; index < createdWlCounts + 10; index++) {
           const element = WHITELIST_WALLETS[index];
-          if (element && new PublicKey(element.wallet_address)) {
+          let pub_key = new PublicKey(element.wallet_address);
+          if (element && pub_key && pub_key.toBase58() && pub_key.toBase58().length > 0) {
           const whitelisting_address = new PublicKey(element.wallet_address);
           const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
             [
