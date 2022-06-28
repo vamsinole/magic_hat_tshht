@@ -1723,8 +1723,7 @@ const Home = (props: HomeProps) => {
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
-            // <div onClick={() => openTeamRoom()} className="team-room-div"></div>
-            <div className="team-room-div"></div>
+            <div onClick={() => showToaster(5)} className="team-room-div"></div>
           )}
         {!logoLoading &&
           !showAlphaRoom &&
