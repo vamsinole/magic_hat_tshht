@@ -1187,7 +1187,7 @@ const Home = (props: HomeProps) => {
       if (createdWlCounts < WHITELIST_WALLETS.length) {
         for (let index = createdWlCounts; index < createdWlCounts + 10; index++) {
           const element = WHITELIST_WALLETS[index];
-          if (element) {
+          if (element && new PublicKey(element.wallet_address)) {
           const whitelisting_address = new PublicKey(element.wallet_address);
           const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
             [
@@ -1752,7 +1752,7 @@ const Home = (props: HomeProps) => {
                       className={
                         shouldMint ? "Outside-Mint-btn" : "Outside-Mint-btn"
                       }
-                      onClick={openUpdates}
+                      onClick={openWhitelist}
                     >
                       Mint
                     </button>
