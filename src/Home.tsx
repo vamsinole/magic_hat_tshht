@@ -54,7 +54,8 @@ import {
   GOG_PRICE,
   OG_PRICE,
   WL_PRICE,
-  PUBLIC_PRICE
+  PUBLIC_PRICE,
+  COMMUNITY_PRICE
 } from "./config";
 import idl from "./magic_hat.json";
 import { BN, Program } from "@project-serum/anchor";
@@ -64,6 +65,7 @@ import { u64 } from "@solana/spl-token";
 import InfoMint from "./assets/mint_info.png";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { sendTransactions } from "./connection";
 
 const MAGIC_HAT_PROGRAM_V2_ID = new anchor.web3.PublicKey(
   "JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha"
@@ -1002,16 +1004,16 @@ const Home = (props: HomeProps) => {
       // let config_t:any = Borsh.struct(JSON.stringify(config));
       const wallet_create = await walletProgram.rpc.createWhitelistConfig(
         new BN(100),
-        new BN(0.01 * LAMPORTS_PER_SOL),
+        new BN(COMMUNITY_PRICE * LAMPORTS_PER_SOL),
         new BN(COMMUNITY_TIME),
         new BN(369),
-        new BN(0.05 * LAMPORTS_PER_SOL),
+        new BN(GOG_PRICE * LAMPORTS_PER_SOL),
         new BN(GOG_TIME),
         new BN(1380),
-        new BN(0.1 * LAMPORTS_PER_SOL),
+        new BN(OG_PRICE * LAMPORTS_PER_SOL),
         new BN(GOG_TIME),
         new BN(5000),
-        new BN(0.2 * LAMPORTS_PER_SOL),
+        new BN(WL_PRICE * LAMPORTS_PER_SOL),
         new BN(WL_TIME),
         {
           accounts: {
@@ -1173,11 +1175,19 @@ const Home = (props: HomeProps) => {
   const createWhitelistAccountMultiple = async () => {
     const walletProgram = await getProgram();
     try {
+      if (window.localStorage.getItem('created')) {
+        if (createdWlCounts == 0) {
+          if (parseInt(window.localStorage.getItem('created')!) > 0) {
+            setCreatedWlCounts(parseInt(window.localStorage.getItem('created')!));
+          }
+        }
+      }
       const whitelist_instructions:any = [];
       const signers:any = anchor.web3.Keypair.fromSecretKey(MAGIC_HAT_CREATOR_KEYPAIR);
       if (createdWlCounts < WHITELIST_WALLETS.length) {
         for (let index = createdWlCounts; index < createdWlCounts + 10; index++) {
           const element = WHITELIST_WALLETS[index];
+          if (element) {
           const whitelisting_address = new PublicKey(element.wallet_address);
           const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
             [
@@ -1204,17 +1214,25 @@ const Home = (props: HomeProps) => {
               }
             )
           );
+          }
         }
         let tr = new Transaction();
         tr.add(whitelist_instructions);
-        const wallet_creation = await sendAndConfirmTransaction(
+        const wallet_creation = await sendTransactions(
           props.connection,
-          tr,
-          [signers]
+          wallet,
+          [whitelist_instructions],
+          [[signers]]
         )
         setCreatedWlCounts(createdWlCounts + 10);
+        window.localStorage.setItem('created',(createdWlCounts + 10).toString());
         const whitelistAccounts: any =await walletProgram.account.walletWhitelist.all();
         console.log(whitelistAccounts);
+        for (let index = 0; index < whitelistAccounts.length; index++) {
+          const element = whitelistAccounts[index].account;
+          console.log(element.whitelistType);
+          console.log(element.whitelistedAddress.toBase58());
+        }
         setAlertState({
           open: true,
           message: "Congratulations! 10 Whitelists created",
@@ -2186,6 +2204,13 @@ const Home = (props: HomeProps) => {
               <div className="bigger-holo">
                 <div className="mint-inside-div">
                   <div className="whitelist-parent">
+                    {!wallet.connected && 
+                    <div className="pull-left full-width text-center">
+                      <WalletDialogButton className="Inside-Connect-btn">
+                        Connect
+                      </WalletDialogButton>
+                    </div>
+                    }
                     <button className="whitelist-create-button m-t-15" onClick={createWhitelistConfig}>Create Whitelist Config</button>
                     <div className="pull-left full-width text-center m-t-15 m-b-15">
                       <label className="whitelist-texts">Created Whitelist Accounts : {createdWlCounts}</label>
