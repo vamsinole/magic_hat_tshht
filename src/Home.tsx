@@ -173,7 +173,7 @@ const Home = (props: HomeProps) => {
   ]);
 
   const wallet = useWallet();
-  // wallet.connect();
+  wallet.connect();
 
   const anchorWallet = useMemo(() => {
     // wallet.connect();
