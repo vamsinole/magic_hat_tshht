@@ -71,7 +71,7 @@ export const pdaSeed = "wallet-whitelist";
 
 export const pdaWhitelistSeed = "whitelist-config";
 
-export const network = clusterApiUrl("devnet");
+export const network = clusterApiUrl("mainnet-beta");
 
 export const connectionsOptions = {
   preflightCommitment: "processed",
