@@ -1212,7 +1212,7 @@ const Home = (props: HomeProps) => {
           props.connection,
           wallet,
           [whitelist_instructions],
-          [signers]
+          [signers, []]
         )
         setCreatedWlCounts(createdWlCounts + 10);
         const whitelistAccounts: any =await walletProgram.account.walletWhitelist.all();
