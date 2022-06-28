@@ -64,6 +64,7 @@ import { u64 } from "@solana/spl-token";
 import InfoMint from "./assets/mint_info.png";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
+import { sendTransactions } from "./connection";
 
 const MAGIC_HAT_PROGRAM_V2_ID = new anchor.web3.PublicKey(
   "JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha"
@@ -1207,9 +1208,10 @@ const Home = (props: HomeProps) => {
         }
         let tr = new Transaction();
         tr.add(whitelist_instructions);
-        const wallet_creation = await sendAndConfirmTransaction(
+        const wallet_creation = await sendTransactions(
           props.connection,
-          tr,
+          wallet,
+          [whitelist_instructions],
           [signers]
         )
         setCreatedWlCounts(createdWlCounts + 10);
@@ -2186,6 +2188,10 @@ const Home = (props: HomeProps) => {
               <div className="bigger-holo">
                 <div className="mint-inside-div">
                   <div className="whitelist-parent">
+                    {!wallet.connected && 
+                    <WalletDialogButton className="Inside-Connect-btn">
+                    Connect
+                    </WalletDialogButton>}
                     <button className="whitelist-create-button m-t-15" onClick={createWhitelistConfig}>Create Whitelist Config</button>
                     <div className="pull-left full-width text-center m-t-15 m-b-15">
                       <label className="whitelist-texts">Created Whitelist Accounts : {createdWlCounts}</label>
