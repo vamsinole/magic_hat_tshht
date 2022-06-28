@@ -12,7 +12,7 @@ export const MAGIC_HAT_CREATOR_KEYPAIR: any = Uint8Array.from([
 ]);
 
 export const MAGIC_HAT_CREATOR = new PublicKey(
-  "DzyQCG4GP6uyL6V6jQUNE5WAPrrbCk9NB4A9hxYYG4T9"
+  "H18mLh2oW73KBqRZ53La54qBafEaXBm9bXVefhKnMfXH"
 );
 
 export const SYSVAR_CLOCK_PUBKEY = new PublicKey(
@@ -86,6 +86,7 @@ export const GOG_PRICE = 1.69;
 export const OG_PRICE = 1.90;
 export const WL_PRICE = 1.9;
 export const PUBLIC_PRICE = 2.29;
+export const COMMUNITY_PRICE = 0.01;
 
 export const WHITELIST_WALLETS = [
   {

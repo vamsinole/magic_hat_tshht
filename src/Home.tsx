@@ -54,7 +54,8 @@ import {
   GOG_PRICE,
   OG_PRICE,
   WL_PRICE,
-  PUBLIC_PRICE
+  PUBLIC_PRICE,
+  COMMUNITY_PRICE
 } from "./config";
 import idl from "./magic_hat.json";
 import { BN, Program } from "@project-serum/anchor";
@@ -1003,16 +1004,16 @@ const Home = (props: HomeProps) => {
       // let config_t:any = Borsh.struct(JSON.stringify(config));
       const wallet_create = await walletProgram.rpc.createWhitelistConfig(
         new BN(100),
-        new BN(0.01 * LAMPORTS_PER_SOL),
+        new BN(COMMUNITY_PRICE * LAMPORTS_PER_SOL),
         new BN(COMMUNITY_TIME),
         new BN(369),
-        new BN(0.05 * LAMPORTS_PER_SOL),
+        new BN(GOG_PRICE * LAMPORTS_PER_SOL),
         new BN(GOG_TIME),
         new BN(1380),
-        new BN(0.1 * LAMPORTS_PER_SOL),
+        new BN(OG_PRICE * LAMPORTS_PER_SOL),
         new BN(GOG_TIME),
         new BN(5000),
-        new BN(0.2 * LAMPORTS_PER_SOL),
+        new BN(WL_PRICE * LAMPORTS_PER_SOL),
         new BN(WL_TIME),
         {
           accounts: {
