@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="302" height="208" viewBox="0 0 302 208">
+  <defs>
+    <filter id="Lotto_Stars" x="0" y="0" width="302" height="208" filterUnits="userSpaceOnUse">
+      <feOffset dx="4" dy="6" input="SourceAlpha"/>
+      <feGaussianBlur stdDeviation="21" result="blur"/>
+      <feFlood flood-color="#f09"/>
+      <feComposite operator="in" in2="blur"/>
+      <feComposite in="SourceGraphic"/>
+    </filter>
+  </defs>
+  <g transform="matrix(1, 0, 0, 1, 0, 0)" filter="url(#Lotto_Stars)">
+    <text id="Lotto_Stars-2" data-name="Lotto Stars" transform="translate(147 108)" fill="#ffe1f3" stroke="#ffc1e6" stroke-width="1" font-size="33" font-family="Signatie" letter-spacing="-0.01em"><tspan x="-86" y="0">Lotto Stars</tspan></text>
+  </g>
+</svg>
