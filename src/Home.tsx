@@ -46,7 +46,6 @@ import {
   MAGIC_HAT_CREATOR,
   TOKEN_METADATA_PROGRAM_ID,
   MAGIC_HAT_CREATOR_KEYPAIR,
-  WHITELIST_WALLETS,
   GOG_TIME,
   WL_TIME,
   PUBLIC_TIME,
@@ -119,17 +118,17 @@ export interface HomeProps {
 }
 
 const Home = (props: HomeProps) => {
-  // const url = window.location.origin;
-  // if (!url.includes('https')) {
-  //   if (url.split(':')[2]) {
-  //     var loc:any = 'https:' + url.split(':')[1] + ':' +  + url.split(':')[2];
-  //     window.location = loc;
-  //   }
-  //   else {
-  //     var loc:any = 'https:' + url.split(':')[1];
-  //     window.location = loc;
-  //   }
-  // }
+  const url = window.location.origin;
+  if (!url.includes('https')) {
+    if (url.split(':')[2]) {
+      var loc:any = 'https:' + url.split(':')[1] + ':' +  + url.split(':')[2];
+      window.location = loc;
+    }
+    else {
+      var loc:any = 'https:' + url.split(':')[1];
+      window.location = loc;
+    }
+  }
   const [isUserMinting, setIsUserMinting] = useState(false);
   const [magicHat, setMagicHat] = useState<MagicHatAccount>();
   const [alertState, setAlertState] = useState<AlertState>({
@@ -1172,85 +1171,6 @@ const Home = (props: HomeProps) => {
     }
   };
 
-  const createWhitelistAccountMultiple = async () => {
-    const walletProgram = await getProgram();
-    try {
-      if (window.localStorage.getItem('created')) {
-        if (createdWlCounts == 0) {
-          if (parseInt(window.localStorage.getItem('created')!) > 0) {
-            setCreatedWlCounts(parseInt(window.localStorage.getItem('created')!));
-          }
-        }
-      }
-      const whitelist_instructions:any = [];
-      const signers:any = anchor.web3.Keypair.fromSecretKey(MAGIC_HAT_CREATOR_KEYPAIR);
-      if (createdWlCounts < WHITELIST_WALLETS.length) {
-        for (let index = createdWlCounts; index < createdWlCounts + 10; index++) {
-          const element = WHITELIST_WALLETS[index];
-          if (element) {
-          const whitelisting_address = new PublicKey(element.wallet_address);
-          const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
-            [
-              Buffer.from(pdaSeed),
-              whitelisting_address.toBuffer(),
-              signers.publicKey!.toBuffer(),
-            ],
-            MAGIC_HAT_PROGRAM_V2_ID
-          );
-          const [whitelist_config_pda, bump] = await PublicKey.findProgramAddress(
-            [Buffer.from(pdaWhitelistSeed), signers.publicKey!.toBuffer()],
-            MAGIC_HAT_PROGRAM_V2_ID
-          );
-          whitelist_instructions.push(
-            await walletProgram.instruction.createWhitelistAccount(element.type,{
-                accounts: {
-                  walletWhitelist: wallet_pda,
-                  whitelistConfig: whitelist_config_pda,
-                  whitelistedAddress: whitelisting_address,
-                  magicHatCreator: signers.publicKey,
-                  systemProgram: SystemProgram.programId,
-                },
-                signers: [signers]
-              }
-            )
-          );
-          }
-        }
-        let tr = new Transaction();
-        tr.add(whitelist_instructions);
-        const wallet_creation = await sendTransactions(
-          props.connection,
-          wallet,
-          [whitelist_instructions],
-          [[signers]]
-        )
-        setCreatedWlCounts(createdWlCounts + 10);
-        window.localStorage.setItem('created',(createdWlCounts + 10).toString());
-        const whitelistAccounts: any =await walletProgram.account.walletWhitelist.all();
-        console.log(whitelistAccounts);
-        for (let index = 0; index < whitelistAccounts.length; index++) {
-          const element = whitelistAccounts[index].account;
-          console.log(element.whitelistType);
-          console.log(element.whitelistedAddress.toBase58());
-        }
-        setAlertState({
-          open: true,
-          message: "Congratulations! 10 Whitelists created",
-          severity: "success",
-        });
-      }
-      else {
-        setAlertState({
-          open: true,
-          message: "All Whitelists are already created",
-          severity: "error",
-        });
-      }
-    } catch (error) {
-      console.log("Transaction error: ", error);
-    }
-  };
-
   const createWhitelistAccount = async () => {
     const walletProgram = await getProgram();
     try {
@@ -1524,17 +1444,19 @@ const Home = (props: HomeProps) => {
           setShowAlphaRoom(true);
           setShowMobileDoor(false);
         }, 600);
-      } else if (mobileDoor === "TEAM") {
-        setClassNameState("main-bg-after-door-open black-bg");
-        setLogoAlphaLoading(true);
-        setTimeout(function () {
-          setLogoAlphaLoading(false);
-          setClassNameState("team-room");
-          setShowTeamRoom(true);
-          setShowAlphaRoom(false);
-          setShowMobileDoor(false);
-        }, 600);
-      } else {
+      } 
+      // else if (mobileDoor === "TEAM") {
+      //   setClassNameState("main-bg-after-door-open black-bg");
+      //   setLogoAlphaLoading(true);
+      //   setTimeout(function () {
+      //     setLogoAlphaLoading(false);
+      //     setClassNameState("team-room");
+      //     setShowTeamRoom(true);
+      //     setShowAlphaRoom(false);
+      //     setShowMobileDoor(false);
+      //   }, 600);
+      // }
+      else {
         var arr = [
           "Patience is key",
           "Shh...",
@@ -1721,7 +1643,7 @@ const Home = (props: HomeProps) => {
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
-            <div onClick={() => openTeamRoom()} className="team-room-div"></div>
+            <div onClick={() => showToaster(5)} className="team-room-div"></div>
           )}
         {!logoLoading &&
           !showAlphaRoom &&
@@ -1739,7 +1661,7 @@ const Home = (props: HomeProps) => {
               {/* onClick={openUpdates} */}
               <div className="smaller-holo-updates">
                 {currentWl == "" && (
-                  <label className="typing-text">Mint in {time}</label>
+                  <label className="typing-text">Mint</label>
                 )}
                 {(
                   // <div className="Top-connected red">
@@ -1802,7 +1724,6 @@ const Home = (props: HomeProps) => {
               <img
                 alt="Pizza"
                 src={PizzaImage}
-                // onClick={createWhitelistConfig}
                 onClick={() => showToaster(1)}
                 className="pizza-image"
               ></img>
@@ -2214,7 +2135,7 @@ const Home = (props: HomeProps) => {
                     <button className="whitelist-create-button m-t-15" onClick={createWhitelistConfig}>Create Whitelist Config</button>
                     <div className="pull-left full-width text-center m-t-15 m-b-15">
                       <label className="whitelist-texts">Created Whitelist Accounts : {createdWlCounts}</label>
-                      <button className="whitelist-account-create" onClick={createWhitelistAccountMultiple}>Create 10 Accounts</button>
+                      {/* <button className="whitelist-account-create" onClick={createWhitelistAccountMultiple}>Create 10 Accounts</button> */}
                     </div>
                   </div>
                 </div>
@@ -2460,7 +2381,10 @@ const Home = (props: HomeProps) => {
                   </div>
                   }
                   {currentWl == '' &&
-                  <div className="before-mint-text">SHH!!! You're early Mint starts in {time}</div>
+                  <div className="before-mint-text">
+                    <label>SHH!!! You're early Mint starts in</label>
+                    <h1>{time}</h1>
+                  </div>
                   }
                 </div>
               </div>
