@@ -19,7 +19,7 @@ const TOKEN_METADATA_PROGRAM_ID = new anchor.web3.PublicKey(
 );
 
 const MAGIC_HAT_PROGRAM_V2_ID = new anchor.web3.PublicKey(
-  'JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha',
+  'AGydXrbh2V9RH3h3cDzpws51tRDs2HbTtUXnCkq58bwH',
 );
 
 interface MagicHatState {

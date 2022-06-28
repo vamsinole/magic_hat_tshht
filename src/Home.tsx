@@ -67,7 +67,7 @@ import 'react-circular-progressbar/dist/styles.css';
 import { sendTransactions } from "./connection";
 
 const MAGIC_HAT_PROGRAM_V2_ID = new anchor.web3.PublicKey(
-  "JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha"
+  "AGydXrbh2V9RH3h3cDzpws51tRDs2HbTtUXnCkq58bwH"
 );
 
 const responsive = {
@@ -1179,6 +1179,7 @@ const Home = (props: HomeProps) => {
       if (createdWlCounts < WHITELIST_WALLETS.length) {
         for (let index = createdWlCounts; index < createdWlCounts + 10; index++) {
           const element = WHITELIST_WALLETS[index];
+          if (element) {
           const whitelisting_address = new PublicKey(element.wallet_address);
           const [wallet_pda, wallet_bump] = await PublicKey.findProgramAddress(
             [
@@ -1205,6 +1206,7 @@ const Home = (props: HomeProps) => {
               }
             )
           );
+          }
         }
         let tr = new Transaction();
         tr.add(whitelist_instructions);
@@ -1212,7 +1214,7 @@ const Home = (props: HomeProps) => {
           props.connection,
           wallet,
           [whitelist_instructions],
-          [signers, []]
+          [[signers]]
         )
         setCreatedWlCounts(createdWlCounts + 10);
         const whitelistAccounts: any =await walletProgram.account.walletWhitelist.all();
@@ -2189,9 +2191,12 @@ const Home = (props: HomeProps) => {
                 <div className="mint-inside-div">
                   <div className="whitelist-parent">
                     {!wallet.connected && 
-                    <WalletDialogButton className="Inside-Connect-btn">
-                    Connect
-                    </WalletDialogButton>}
+                    <div className="pull-left full-width text-center">
+                      <WalletDialogButton className="Inside-Connect-btn">
+                        Connect
+                      </WalletDialogButton>
+                    </div>
+                    }
                     <button className="whitelist-create-button m-t-15" onClick={createWhitelistConfig}>Create Whitelist Config</button>
                     <div className="pull-left full-width text-center m-t-15 m-b-15">
                       <label className="whitelist-texts">Created Whitelist Accounts : {createdWlCounts}</label>

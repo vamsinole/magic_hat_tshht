@@ -1,7 +1,7 @@
 import { PublicKey, clusterApiUrl } from "@solana/web3.js";
 
 export const MAGIC_HAT_PROGRAM_V2_ID = new PublicKey(
-  "JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha"
+  "AGydXrbh2V9RH3h3cDzpws51tRDs2HbTtUXnCkq58bwH"
 );
 
 export const MAGIC_HAT_CREATOR_KEYPAIR: any = Uint8Array.from([
