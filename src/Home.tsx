@@ -2461,7 +2461,10 @@ const Home = (props: HomeProps) => {
                   </div>
                   }
                   {currentWl == '' &&
-                  <div className="before-mint-text">SHH!!! You're early Mint starts in {time}</div>
+                  <div className="before-mint-text">
+                    <label>SHH!!! You're early Mint starts in</label>
+                    <h1>{time}</h1>
+                  </div>
                   }
                 </div>
               </div>
