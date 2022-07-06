@@ -16,6 +16,7 @@
   width: 200px;
 }
 
+
 @import url("https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap");
 
 body {
@@ -1699,8 +1700,20 @@ body {
   background: #305759;
 }
 
+.minted-out {
+  font-size: 40px;
+  margin-top: 120px;
+  color: #38f1ff;
+  margin-bottom: 20px;
+  font-family: "Courier New", Courier, monospace;
+}
+
 .m-t-10 {
   margin-top: 10px;
+}
+
+.m-b-20 {
+  margin-bottom: 20px !important;
 }
 
 .close-nft-success-message {

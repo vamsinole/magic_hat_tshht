@@ -1676,7 +1676,7 @@ const Home = (props: HomeProps) => {
                       }
                       onClick={openUpdates}
                     >
-                      Mint
+                      Minted Out
                     </button>
                   </div>
                 )}
@@ -2151,7 +2151,7 @@ const Home = (props: HomeProps) => {
                 <div className="holo-updates">
                   {currentWl != '' &&
                   <div className="mint-inside-div">
-                    {!isMobile && 
+                    {/* {!isMobile && 
                     <img
                       src={InfoMint}
                       onMouseOver={() => setShowMintInfo(true)}
@@ -2173,7 +2173,7 @@ const Home = (props: HomeProps) => {
                           : "mint-info opacity-1"
                       }
                     />
-                    }
+                    } */}
                     {!isMobile && 
                     <div className={showMintInfo ? "mint-info-total opacity-1" : "mint-info-total opacity-0"}>
                       <h2 className="pull-left full-width text-center m-t-5 m-b-10">
@@ -2239,7 +2239,7 @@ const Home = (props: HomeProps) => {
                       </OutsideClickHandler>
                     </div>
                     }
-                    {!isMobile && 
+                    {/* {!isMobile && 
                     <div className="pull-left full-width">
                       <div className="Items-available-div">
                         <label className="items-available-text">
@@ -2261,11 +2261,11 @@ const Home = (props: HomeProps) => {
                         </label>
                       </div>
                     </div>
-                    }
-                    {isMobile && 
+                    } */}
+                    {/* {isMobile && 
                     <div className="current-whitelist">{currentWl}</div>
-                    }
-                    {isMobile && 
+                    } */}
+                    {/* {isMobile && 
                     <label className="pull-left full-width text-center m-t-15 m-b-10 courier mint-text-color">
                       {currentWl == "GOG + OG" && <span>WL - Mint in</span>}
                       {currentWl == "WL" && <span>PUBLIC - Mint in</span>}
@@ -2280,16 +2280,17 @@ const Home = (props: HomeProps) => {
                       )}
                       {currentWl == "PUBLIC" && <span>---</span>}
                     </label>
-                    }
+                    } */}
+                    <h1 className="minted-out">Minted Out</h1>
                     {!isMobile &&
-                    <label className="completed-counts">
-                      {magicHat?.state.itemsRemaining!} /6969
+                    <label className="completed-counts m-b-20">
+                      4200 /4200
                     </label>
                     }
                     {!isMobile && (
                       <div className="battery">
                         {setBars.map(function (item, i) {
-                          if (completed >= item) {
+                          if (100 >= item) {
                             return (
                               <div
                                 className="bar active"
@@ -2305,12 +2306,12 @@ const Home = (props: HomeProps) => {
                       </div>
                     )}
                     {isMobile &&
-                    <CircularProgressbar value={completed} text={magicHat?.state.itemsRemaining + '/' + magicHat?.state.itemsAvailable} />
+                    <CircularProgressbar value={100} text={4200 + '/' + 4200} />
                     }
                     {/* <div className="mint-progress">
                       <ProgressBar bgcolor={"#6a1b9a"} completed={completed} />
                     </div> */}
-                    <div className="remaining-time-div m-t-0 m-b-15 spacing-counts">
+                    {/* <div className="remaining-time-div m-t-0 m-b-15 spacing-counts">
                       <div className="mint-count">
                         <button
                           className="decrease-count"
@@ -2326,8 +2327,8 @@ const Home = (props: HomeProps) => {
                           +
                         </button>
                       </div>
-                    </div>
-                    <div className="remaining-time-div m-t-0 m-b-15">
+                    </div> */}
+                    {/* <div className="remaining-time-div m-t-0 m-b-15">
                       {!wallet.connected ? (
                         <div className="Top-connected red">
                           <WalletDialogButton className="Inside-Connect-btn">
@@ -2354,8 +2355,8 @@ const Home = (props: HomeProps) => {
                           </button>
                         </div>
                       )}
-                    </div>
-                    {mintSuccessMessage && (
+                    </div> */}
+                    {/* {mintSuccessMessage && (
                       <div className="nft-success-mint-message">
                         <span
                           className="close-nft-success-message"
@@ -2377,7 +2378,7 @@ const Home = (props: HomeProps) => {
                           {mintResponse}
                         </label>
                       </div>
-                    )}
+                    )} */}
                   </div>
                   }
                   {currentWl == '' &&
