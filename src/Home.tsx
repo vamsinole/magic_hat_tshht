@@ -729,6 +729,8 @@ const Home = (props: HomeProps) => {
       setMaxCount(1);
     } else if(currentWl == 'PUBLIC') {
       setMaxCount(5);
+    } else if(currentWl == 'COMMUNITY') {
+      setMaxCount(4);
     }
     if (mintCount >= maxCount) {
     } else {
@@ -745,6 +747,8 @@ const Home = (props: HomeProps) => {
       l = 1;
     } else if(currentWl == 'PUBLIC') {
       l = 5;
+    } else if(currentWl == 'COMMUNITY') {
+      l = 4;
     }
     if (mintCount <= 1) {
     } else {
@@ -1040,16 +1044,16 @@ const Home = (props: HomeProps) => {
       );
       const wallet_create = await walletProgram.rpc.updateWhitelistConfig(
         new BN(100),
-        new BN(GOG_PRICE * LAMPORTS_PER_SOL),
+        new BN(COMMUNITY_PRICE * LAMPORTS_PER_SOL),
         new BN(COMMUNITY_TIME),
         new BN(369),
-        new BN(OG_PRICE * LAMPORTS_PER_SOL),
+        new BN(GOG_PRICE * LAMPORTS_PER_SOL),
         new BN(GOG_TIME),
         new BN(1380),
-        new BN(WL_PRICE * LAMPORTS_PER_SOL),
+        new BN(OG_PRICE * LAMPORTS_PER_SOL),
         new BN(GOG_TIME),
         new BN(5000),
-        new BN(PUBLIC_PRICE * LAMPORTS_PER_SOL),
+        new BN(WL_PRICE * LAMPORTS_PER_SOL),
         new BN(WL_TIME),
         {
           accounts: {
@@ -1254,17 +1258,47 @@ const Home = (props: HomeProps) => {
     } else if (time >= GOG_TIME) {
       setCurrentWl("GOG + OG");
       currentWltype = "GOG + OG";
+    } else if (time >= COMMUNITY_TIME) {
+      setCurrentWl("COMMUNITY");
+      currentWltype = "COMMUNITY";
     }
     if (currentWltype == "PUBLIC") {
       return "";
     } else {
-      if (currentWltype == "GOG + OG") {
+      if (currentWltype == "COMMUNITY") {
         const date = new Date();
         const time: any = parseInt((date.getTime() / 1000).toFixed(0));
-        // if (WL_TIME >= time) {
-        //   setCurrentWl('WL');
-        //   return;
-        // }
+        var delta = Math.abs(time - GOG_TIME);
+        if (delta <= 0) {
+          setCurrentWl("GOG + OG");
+          currentWltype = "GOG + OG";
+        }
+        let days: any = Math.floor(delta / 86400);
+        delta -= days * 86400;
+        let hours: any = Math.floor(delta / 3600) % 24;
+        delta -= hours * 3600;
+        let minutes: any = Math.floor(delta / 60) % 60;
+        delta -= minutes * 60;
+        let seconds: any = delta % 60;
+        hours = Math.abs(hours);
+        if (days < 10) {
+          days = "0" + days;
+        }
+        if (hours < 10) {
+          hours = "0" + hours;
+        }
+        minutes = Math.abs(minutes);
+        if (minutes < 10) {
+          minutes = "0" + minutes;
+        }
+        seconds = Math.abs(seconds);
+        if (seconds < 10) {
+          seconds = "0" + seconds;
+        }
+        setTime(hours + ":" + minutes + ":" + seconds);
+      } else if (currentWltype == "GOG + OG") {
+        const date = new Date();
+        const time: any = parseInt((date.getTime() / 1000).toFixed(0));
         var delta = Math.abs(time - WL_TIME);
         if (delta <= 0) {
           setCurrentWl("WL");
@@ -1277,9 +1311,6 @@ const Home = (props: HomeProps) => {
         let minutes: any = Math.floor(delta / 60) % 60;
         delta -= minutes * 60;
         let seconds: any = delta % 60;
-        // let hours:any = parseInt((((time) - WL_TIME) / 3600).toFixed(0));
-        // let minutes:any = parseInt(((((time) - WL_TIME) % 3600) / 60).toFixed(0));
-        // let seconds:any = parseInt((((time) - WL_TIME) % 60).toFixed(0));
         hours = Math.abs(hours);
         if (days < 10) {
           days = "0" + days;
@@ -1332,14 +1363,10 @@ const Home = (props: HomeProps) => {
       } else {
         const date = new Date();
         const time: any = parseInt((date.getTime() / 1000).toFixed(0));
-        // if (GOG_TIME > time) {
-        //   setCurrentWl('GOG + OG');
-        //   return;
-        // }
-        var delta = Math.abs(time - GOG_TIME);
+        var delta = Math.abs(time - COMMUNITY_TIME);
         if (delta <= 0) {
-          setCurrentWl("GOG + OG");
-          currentWltype = "GOG + OG";
+          setCurrentWl("COMMUNITY");
+          currentWltype = "COMMUNITY";
         }
         let days: any = Math.floor(delta / 86400);
         delta -= days * 86400;
@@ -1348,9 +1375,6 @@ const Home = (props: HomeProps) => {
         let minutes: any = Math.floor(delta / 60) % 60;
         delta -= minutes * 60;
         let seconds: any = delta % 60;
-        // let hours:any = parseInt((((time) - WL_TIME) / 3600).toFixed(0));
-        // let minutes:any = parseInt(((((time) - WL_TIME) % 3600) / 60).toFixed(0));
-        // let seconds:any = parseInt((((time) - WL_TIME) % 60).toFixed(0));
         hours = Math.abs(hours);
         if (days < 10) {
           days = "0" + days;
@@ -2243,9 +2267,10 @@ const Home = (props: HomeProps) => {
                     <div className="pull-left full-width">
                       <div className="Items-available-div">
                         <label className="items-available-text">
+                          {currentWl == "COMMUNITY" && <span>GOG + OG - Mint in</span>}
                           {currentWl == "GOG + OG" && <span>WL - Mint in</span>}
                           {currentWl == "WL" && <span>PUBLIC - Mint in</span>}
-                          {currentWl == "" && <span>GOG + OG - Mint in</span>}
+                          {currentWl == "" && <span>COMMUNITY - Mint in</span>}
                           {currentWl == "PUBLIC" && <span>PUBLIC MINT</span>}
                         </label>
                         <label className="items-available-text">
@@ -2267,9 +2292,10 @@ const Home = (props: HomeProps) => {
                     } */}
                     {/* {isMobile && 
                     <label className="pull-left full-width text-center m-t-15 m-b-10 courier mint-text-color">
+                      {currentWl == "COMMUNITY" && <span>GOG + OG - Mint in</span>}
                       {currentWl == "GOG + OG" && <span>WL - Mint in</span>}
                       {currentWl == "WL" && <span>PUBLIC - Mint in</span>}
-                      {currentWl == "" && <span>GOG + OG - Mint in</span>}
+                      {currentWl == "" && <span>COMMUNITY - Mint in</span>}
                       {currentWl == "PUBLIC" && <span>PUBLIC MINT</span>}
                     </label>
                     }
