@@ -10,8 +10,18 @@ export const MAGIC_HAT_CREATOR = new PublicKey(
   "H18mLh2oW73KBqRZ53La54qBafEaXBm9bXVefhKnMfXH"
 );
 
+export const MAGIC_STAKE_PROGRAM_ID = new PublicKey("CMftun186ypSsjsZM8eVfDA7AsPZLoScWpTEYBvCzZVQ");
+
+export const FARM_ID = new PublicKey("78yzdAb2quRrZWgQi114jdJrsroscWfV3AdVDQYsTFt8");
+
+export const COLLECTION_ID = new PublicKey("BNZy4DXcGZRpkkgnQn5nfqnkMPjjh7NLk1KBTe8qqtmZ");
+
 export const SYSVAR_CLOCK_PUBKEY = new PublicKey(
   "SysvarC1ock11111111111111111111111111111111"
+);
+
+export const TOKEN_PROGRAM_ID = new PublicKey(
+  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
 );
 
 export const SYSVAR_EPOCH_SCHEDULE_PUBKEY = new PublicKey(
@@ -38,6 +48,10 @@ export const SYSVAR_SLOT_HASHES_PUBKEY = new PublicKey(
   "SysvarRecentB1ockHashes11111111111111111111"
 );
 
+export const GEM_BANK = new PublicKey(
+  "F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297"
+);
+
 export const SYSVAR_SLOT_HISTORY_PUBKEY = new PublicKey(
   "SysvarS1otHistory11111111111111111111111111"
 );
@@ -58,15 +72,11 @@ export const SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID = new PublicKey(
   "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
 );
 
-export const TOKEN_PROGRAM_ID = new PublicKey(
-  "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
-);
-
 export const pdaSeed = "wallet-whitelist";
 
 export const pdaWhitelistSeed = "whitelist-config";
 
-export const network = clusterApiUrl("mainnet-beta");
+export const network = clusterApiUrl("devnet");
 
 export const connectionsOptions = {
   preflightCommitment: "processed",

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import * as anchor from "@project-serum/anchor";
-import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, sendAndConfirmTransaction, Transaction } from "@solana/web3.js";
+import { PublicKey, SystemProgram, LAMPORTS_PER_SOL, sendAndConfirmTransaction, Transaction, Connection, GetProgramAccountsFilter, TokenAccountsFilter, clusterApiUrl } from "@solana/web3.js";
 import { Snackbar } from "@material-ui/core";
 import Alert from "@material-ui/lab/Alert";
 import MobileMenu from "./assets/mobile_menu.png";
@@ -28,6 +28,7 @@ import Beanbag from "./assets/bean_bag.png";
 import SophaSider from "./assets/sopha_sider.png";
 import MenuContent from "./components/menu";
 import CloseAlpha from "./assets/turn-back.png";
+import Close from "./assets/close.png";
 import AlphaScroll from "./assets/down-arrow.png";
 import Carousel from "react-multi-carousel";
 import "react-multi-carousel/lib/styles.css";
@@ -54,9 +55,17 @@ import {
   OG_PRICE,
   WL_PRICE,
   PUBLIC_PRICE,
-  COMMUNITY_PRICE
+  COMMUNITY_PRICE,
+  MAGIC_STAKE_PROGRAM_ID,
+  TOKEN_PROGRAM_ID,
+  FARM_ID,
+  SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID,
+  GEM_BANK,
+  COLLECTION_ID
 } from "./config";
 import idl from "./magic_hat.json";
+import idlStake from "./magic_stake.json";
+import idlBank from "./gem_bank.json";
 import { BN, Program } from "@project-serum/anchor";
 import Borsh from "@project-serum/borsh";
 import ProgressBar from "./components/progress-bar";
@@ -65,6 +74,18 @@ import InfoMint from "./assets/mint_info.png";
 import { CircularProgressbar } from 'react-circular-progressbar';
 import 'react-circular-progressbar/dist/styles.css';
 import { sendTransactions } from "./connection";
+import {
+  loadSwitchboardProgram,
+  OracleQueueAccount,
+  PermissionAccount,
+  SwitchboardPermission,
+  VrfAccount,
+} from "@switchboard-xyz/switchboard-v2";
+import { publicKey } from "@project-serum/anchor/dist/utils";
+// import { Metaplex, keypairIdentity, bundlrStorage } from "@metaplex-foundation/js";
+// import { Connection } from '@metaplex/js'; 
+// import { Metadata, MetadataNew } from '@metaplex-foundation/mpl-token-metadata';
+import { getParsedNftAccountsByOwner,isValidSolanaAddress, createConnectionConfig,} from "@nfteyez/sol-rayz";
 
 const MAGIC_HAT_PROGRAM_V2_ID = new anchor.web3.PublicKey(
   "JBw14YzhNTQGqUX54MatDgxDrCPopKf4EGcJHoHfq5ha"
@@ -88,6 +109,95 @@ const responsive = {
     items: 1,
   },
 };
+
+const RewardType = {
+  Probable: { probable: {} },
+  Fixed: { fixed: {} },
+};
+
+const LPType = {
+  RESPECT: { respect: {} }
+};
+
+interface FarmConfig {
+  minStakingPeriodSec: BN;
+  cooldownPeriodSec: BN;
+  unstakingFeePercent: BN;
+}
+
+interface MaxCounts {
+  maxFarmers: number;
+  maxGems: number;
+  maxRarityPoints: number;
+}
+
+interface TierConfig {
+  rewardRate: BN;
+  requiredTenure: BN;
+}
+
+interface LpTierConfig {
+  lpTierRate: BN;
+  lpRequiredTenure: BN;
+}
+
+interface ProbTierConfig {
+  probableRewardRate: BN;
+  probability: BN;
+}
+
+interface ProbableRateScheduleStake {
+  prob1: ProbTierConfig | null;
+  prob2: ProbTierConfig | null;
+  prob3: ProbTierConfig | null;
+  prob4: ProbTierConfig | null;
+  prob5: ProbTierConfig | null;
+  denominator: BN;
+}
+
+interface FixedRateScheduleStake {
+  baseRate: BN;
+  tier1: TierConfig | null;
+  tier2: TierConfig | null;
+  tier3: TierConfig | null;
+  denominator: BN;
+}
+
+interface LpRateScheduleStake {
+  lpBaseRate: BN;
+  lpTier1: LpTierConfig | null;
+  lpTier2: LpTierConfig | null;
+  lpTier3: LpTierConfig | null;
+  lpDenominator: BN;
+}
+
+interface FixedRateSchedule {
+  maxFarmers: number;
+  maxGems: number;
+  maxRarityPoints: number;
+}
+
+interface FixedRateConfig {
+  schedule: FixedRateScheduleStake;
+  amount: BN;
+  durationSec: BN;
+}
+
+interface RarityConfig {
+  mint: PublicKey;
+  rarityPoints: BN;
+}
+
+interface LpRateConfig {
+  lpSchedule: LpRateScheduleStake;
+  lpDurationSec: BN;
+}
+
+interface ProbableRateConfig {
+  probableSchedule: ProbableRateScheduleStake;
+  probableAmount: BN;
+  probableDurationSec: BN;
+}
 
 interface WhiteListType {
   whitelist_type: string;
@@ -118,17 +228,17 @@ export interface HomeProps {
 }
 
 const Home = (props: HomeProps) => {
-  const url = window.location.origin;
-  if (!url.includes('https')) {
-    if (url.split(':')[2]) {
-      var loc:any = 'https:' + url.split(':')[1] + ':' +  + url.split(':')[2];
-      window.location = loc;
-    }
-    else {
-      var loc:any = 'https:' + url.split(':')[1];
-      window.location = loc;
-    }
-  }
+  // const url = window.location.origin;
+  // if (!url.includes('https')) {
+  //   if (url.split(':')[2]) {
+  //     var loc:any = 'https:' + url.split(':')[1] + ':' +  + url.split(':')[2];
+  //     window.location = loc;
+  //   }
+  //   else {
+  //     var loc:any = 'https:' + url.split(':')[1];
+  //     window.location = loc;
+  //   }
+  // }
   const [isUserMinting, setIsUserMinting] = useState(false);
   const [magicHat, setMagicHat] = useState<MagicHatAccount>();
   const [alertState, setAlertState] = useState<AlertState>({
@@ -146,6 +256,7 @@ const Home = (props: HomeProps) => {
   const [showMessage, setShowMessage] = useState(false);
   const [messageText, setMessageText] = useState("");
   const [showAlphaRoom, setShowAlphaRoom] = useState(false);
+  const [showStakeRoom, setShowStakeRoom] = useState(false);
   const [showTeamRoom, setShowTeamRoom] = useState(false);
   const [showFirstPhil, setShowFirstPhil] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -163,8 +274,25 @@ const Home = (props: HomeProps) => {
   const [showMintInfo, setShowMintInfo] = useState(false);
   const [mintSuccessMessage, setMintSuccessMessage] = useState(false);
   const [showWhitelist, setShowWhitelist] = useState(false);
+  const [showStakeCity, setShowStakeCity] = useState(false);
+  const [showStaking, setShowStaking] = useState(false);
+  const [roomOneInfoClass, setRoomOneInfoClass] = useState("stake-room-info-one");
+  const [roomTwoInfoClass, setRoomTwoInfoClass] = useState("stake-room-info-one");
+  const [roomThreeInfoClass, setRoomThreeInfoClass] = useState("stake-room-info-one");
+  const [roomFourInfoClass, setRoomFourInfoClass] = useState("stake-room-info-one");
+  const [roomFiveInfoClass, setRoomFiveInfoClass] = useState("stake-room-info-one");
   const [createdWlCounts, setCreatedWlCounts] = useState(0);
+  const [nftStakeStep, setNftStakeStep] = useState(0);
+  const [stakingStep, setStakingStep] = useState(0);
+  const [currentStakeRoom, setCurrentStakeRoom] = useState(0);
+  const [stakedNft, setStakedNft] = useState<any>(null);
+  const [stakedNfts, setStakedNfts] = useState<any>([]);
+  const [stakedTokens, setStakedTokens] = useState<any>(0);
+  const [multiplierLevel, setMultiplierLevel] = useState<any>(0);
+  const [respectEarned, setRespectEarned] = useState<any>(0);
+  const [stakedCity, setStakedCity] = useState("");
   const [mintResponse, setMintResponse] = useState("");
+  const [collectionId, setCollectionId] = useState<any>("");
   const [mintResponseType, setMintResponseType] = useState("");
   const [maxCount, setMaxCount] = useState<number>(3);
   const [setBars] = useState([
@@ -172,9 +300,29 @@ const Home = (props: HomeProps) => {
     42, 44, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64, 66, 68, 70, 72, 74, 76, 78,
     80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 100,
   ]);
+  const [gotNfts, setGotNfts] = useState(false);
+  const [showStakeDashboard, setShowStakeDashboard] = useState(false);
+  const [nfts, setNFts] = useState<any>([]);
 
   const wallet = useWallet();
   wallet.connect();
+
+  const citys = [{
+    name: "MAHANOTHIA",
+    link: Dev1
+  },{
+    name: "RAUDCHERI",
+    link: Dev1
+  },{
+    name: "SAN CHETOS",
+    link: Dev1
+  },{
+    name: "MAGNEXIA",
+    link: Dev1
+  },{
+    name: "THE BASEMENT",
+    link: Dev1
+  }]
 
   const anchorWallet = useMemo(() => {
     // wallet.connect();
@@ -610,6 +758,108 @@ const Home = (props: HomeProps) => {
     }
   };
 
+  // const createVRFAccount = async () => {
+  //   let payer = anchor.web3.Keypair.generate();
+  //   const program = await loadSwitchboardProgram("devnet", undefined, payer);
+  //   const queueAccount = new queueAccount({ program, publicKey: queueKey });
+  //   const queue = await queueAccount.loadData();
+
+  //   // load client program used for callback
+  //   const vrfClientProgram = anchor.workspace
+  //     .AnchorVrfParser as anchor.Program<AnchorVrfParser>;
+  //   const vrfSecret = anchor.web3.Keypair.generate();
+
+  //   const vrfIxCoder = new anchor.BorshInstructionCoder(vrfClientProgram.idl);
+  //   const vrfClientCallback: Callback = {
+  //     programId: vrfClientProgram.programId,
+  //     accounts: [
+  //       // ensure all accounts in updateResult are populated
+  //       { pubkey: vrfClientKey, isSigner: false, isWritable: true },
+  //       { pubkey: vrfSecret.publicKey, isSigner: false, isWritable: false },
+  //     ],
+  //     ixData: vrfIxCoder.encode("updateResult", ""), // pass any params for instruction here
+  //   };
+
+  //   // create VRF
+  //   const vrfAccount = await VrfAccount.create(program, {
+  //     queue: queueAccount,
+  //     callback: vrfClientCallback,
+  //     authority: vrfClientKey, // vrf authority
+  //     keypair: vrfSecret,
+  //   });
+
+  //   // create permission
+  //   const permissionAccount = await PermissionAccount.create(program, {
+  //     authority: queue.authority,
+  //     granter: queue.publicKey,
+  //     grantee: vrfAccount.publicKey,
+  //   });
+
+  //   // if queue has not enabled unpermissionedVrfEnabled, queue will need to grant permission
+  //   let queueAuthority: anchor.web3.Keypair;
+  //   await permissionAccount.set({
+  //     authority: queueAuthority,
+  //     permission: SwitchboardPermission.PERMIT_VRF_REQUESTS,
+  //     enable: true,
+  //   });
+  // }
+
+  const openStaking = async () => {
+    setShowStaking(true);
+  }
+
+  const hideStaking = async () => {
+    setNftStakeStep(0);
+    setStakedCity("");
+    setStakedNft(null);
+    setShowStakeRoom(true);
+    setShowStaking(false);
+  }
+
+  let nftStakeStepCount = 0;
+
+  const nextStepStake = async () => {
+    nftStakeStepCount = nftStakeStep;
+    if(nftStakeStepCount == 1) {
+      nftStakeStepCount = nftStakeStepCount + 1;
+      setNftStakeStep(nftStakeStepCount);
+      setTimeout(function () {
+        nftStakeStepCount = nftStakeStepCount + 1;
+        setNftStakeStep(nftStakeStepCount);
+        var arr = stakedNfts;
+        arr.push(stakedNft);
+        setStakedNfts(arr);
+        setStakedTokens(stakedNfts.length * 100);
+        setRespectEarned(stakedNfts.length * 100);
+        setMultiplierLevel(stakedNfts.length);
+      }, 3500)
+    }
+    else {
+      if (stakedCity && stakedCity.length > 0 && nftStakeStepCount == 0) {
+        nftStakeStepCount = nftStakeStepCount + 2;
+        setNftStakeStep(nftStakeStepCount);
+        setTimeout(function () {
+          nftStakeStepCount = nftStakeStepCount + 1;
+          setNftStakeStep(nftStakeStepCount);
+          var arr = stakedNfts;
+          arr.push(stakedNft);
+          setStakedNfts(arr);
+          setStakedTokens(stakedNfts.length * 100);
+          setRespectEarned(stakedNfts.length * 100);
+          setMultiplierLevel(stakedNfts.length);
+        }, 3500)
+      }
+      else {
+        nftStakeStepCount = nftStakeStepCount + 1;
+        setNftStakeStep(nftStakeStepCount);
+      }
+    }
+  }
+
+  const closeStaking = async () => {
+    setShowStaking(false);
+  }
+
   const getWhitelistAccounts = async () => {
     if (
       wallet &&
@@ -770,6 +1020,9 @@ const Home = (props: HomeProps) => {
       setClassNameState("main-bg-after-door-open");
       setLogoAlphaLoading(false);
       getWhitelistAccounts();
+      getNFTs();
+      getFarms();
+      getFarmers();
       getTimeToMInt();
     }, 900);
   }, [
@@ -844,6 +1097,883 @@ const Home = (props: HomeProps) => {
     return new Program(idl_o, MAGIC_HAT_PROGRAM_V2_ID, provider);
   };
 
+  const getStakeProgram = async () => {
+    const wallet_t: any = wallet;
+    const provider = new anchor.Provider(
+      props.connection,
+      wallet_t,
+      anchor.Provider.defaultOptions()
+    );
+    const idl_o: any = idlStake;
+    console.log(MAGIC_STAKE_PROGRAM_ID.toBase58())
+    return new Program(idl_o, MAGIC_STAKE_PROGRAM_ID, provider);
+  };
+
+  const getBankProgram = async () => {
+    const wallet_t: any = wallet;
+    const provider = new anchor.Provider(
+      props.connection,
+      wallet_t,
+      anchor.Provider.defaultOptions()
+    );
+    const idl_o: any = idlBank;
+    return new Program(idl_o, GEM_BANK, provider);
+  };
+
+  const findFarmAuthorityPDA = async (farm: PublicKey) => {
+    return PublicKey.findProgramAddress([farm.toBytes()], MAGIC_STAKE_PROGRAM_ID);
+  };
+
+  const findFarmTreasuryPDA = (farm: PublicKey) => {
+    return PublicKey.findProgramAddress(
+      [Buffer.from('treasury'), farm.toBytes()],
+      MAGIC_STAKE_PROGRAM_ID
+    );
+  };
+
+  const findRewardsPotPDA = (farm: PublicKey, rewardMint: PublicKey) => {
+    return PublicKey.findProgramAddress(
+      [Buffer.from('reward_pot'), farm.toBytes(), rewardMint.toBytes()],
+      MAGIC_STAKE_PROGRAM_ID
+    );
+  };
+
+  const findFarmTreasuryTokenPDA = (farm: PublicKey, rewardMint: PublicKey) => {
+    return PublicKey.findProgramAddress(
+      [Buffer.from('token_treasury'), farm.toBytes(), rewardMint.toBytes()],
+      MAGIC_STAKE_PROGRAM_ID
+    );
+  };
+
+  const funderToAuthorizePDA = (farm: PublicKey, funder_to_authorize: PublicKey) => {
+    return PublicKey.findProgramAddress(
+      [Buffer.from('authorization'), farm.toBytes(), funder_to_authorize.toBytes()],
+      MAGIC_STAKE_PROGRAM_ID
+    );
+  };
+
+  const farmerPDA = (farm: PublicKey, farmer: PublicKey) => {
+    return PublicKey.findProgramAddress(
+      [Buffer.from('farmer'), farm.toBytes(), farmer.toBytes()],
+      MAGIC_STAKE_PROGRAM_ID
+    );
+  };
+
+  const farmerVaultPDA = (bank: PublicKey, creator: PublicKey) => {
+    const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+    return PublicKey.findProgramAddress(
+      [Buffer.from('vault'), bank.toBytes(), creator.toBytes()],
+      gem_bank
+    );
+  };
+
+  const gemBoxPda = (vault: PublicKey, gem_mint: PublicKey) => {
+    const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+    return PublicKey.findProgramAddress(
+      [Buffer.from('gem_box'), vault.toBytes(), gem_mint.toBytes()],
+      gem_bank
+    );
+  };
+
+  const gemDepositBoxPda = (vault: PublicKey, gem_mint: PublicKey) => {
+    const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+    return PublicKey.findProgramAddress(
+      [Buffer.from('gem_deposit_receipt'), vault.toBytes(), gem_mint.toBytes()],
+      gem_bank
+    );
+  };
+
+  const gemBoxRarityPda = (bank: PublicKey, gem_mint: PublicKey) => {
+    const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+    return PublicKey.findProgramAddress(
+      [Buffer.from('gem_rarity'), bank.toBytes(), gem_mint.toBytes()],
+      gem_bank
+    );
+  };
+  
+  const vaultAuthorityPda = (valut: PublicKey) => {
+    const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+    return PublicKey.findProgramAddress(
+      [valut.toBytes()],
+      gem_bank
+    );
+  };
+  
+  const whitelistProofPda = (bank: PublicKey, address_to_whitelist: PublicKey) => {
+    const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+    return PublicKey.findProgramAddress(
+      [Buffer.from('whitelist'),bank.toBytes(), address_to_whitelist.toBytes()],
+      gem_bank
+    );
+  };
+
+  const tokenMetadataPda = (mint: PublicKey) => {
+    return PublicKey.findProgramAddress(
+      [Buffer.from('metadata'),TOKEN_METADATA_PROGRAM_ID.toBytes(), mint.toBytes()],
+      TOKEN_METADATA_PROGRAM_ID
+    );
+  };
+
+  async function getTokensByOwner(owner: any) {
+    let conn:any = props.connection;
+    const tokens = await conn.getParsedTokenAccountsByOwner(owner, {
+      programId: TOKEN_PROGRAM_ID,
+    });
+  
+    // initial filter - only tokens with 0 decimals & of which 1 is present in the wallet
+    return tokens.value
+      .filter((t:any) => {
+        const amount = t.account.data.parsed.info.tokenAmount;
+        return amount.decimals === 0 && amount.uiAmount === 1;
+      })
+      .map((t:any) => {
+        return { pubkey: t.pubkey, mint: t.account.data.parsed.info.mint };
+      });
+  }
+
+  const findAssociatedTokenAddress = async(walletAddress: PublicKey, tokenMintAddress: PublicKey) => {
+    return (await PublicKey.findProgramAddress([
+        walletAddress.toBuffer(),
+        TOKEN_PROGRAM_ID.toBuffer(),
+        tokenMintAddress.toBuffer(),
+      ],
+      SPL_ASSOCIATED_TOKEN_ACCOUNT_PROGRAM_ID
+    ))[0];
+  }
+
+  // Farm Manager Should call this
+  const initFarm = async () => {
+    // getFarms();
+    const stakeProgram = await getStakeProgram();
+    try {
+      const farm = anchor.web3.Keypair.generate();
+      const bank = anchor.web3.Keypair.generate();
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const fee_wallet = new PublicKey('Bi4UpEtKxnHwCw7b9xkMCouGT6xLNm8nixs2fTmxTevs');
+      const [farmAuth, farmAuthBump] = await findFarmAuthorityPDA(farm.publicKey);
+      const [farmTreasury, farmTreasuryBump] = await findFarmTreasuryPDA(
+        farm.publicKey
+      );
+      const [rewardAPot, rewardAPotBump] = await findRewardsPotPDA(
+        farm.publicKey,
+        rewardAMint
+      );
+      const [farmTreasuryToken, farmTreasuryTokenBump] = await findFarmTreasuryTokenPDA(
+        farm.publicKey,
+        rewardAMint
+      );
+      const farm_config:FarmConfig = {
+        minStakingPeriodSec: new BN(30),
+        cooldownPeriodSec: new BN(30),
+        unstakingFeePercent: new BN(10)
+      }
+      const max_counts:MaxCounts = {
+        maxFarmers: Number(4200),
+        maxGems: Number(4200),
+        maxRarityPoints: Number(65000)
+      }
+      console.log(farm.publicKey.toBase58());
+      console.log(bank.publicKey.toBase58());
+      const signers = [farm, bank];
+      // let config_t:any = Borsh.struct(JSON.stringify(config));
+      const wallet_create = await stakeProgram.rpc.initFarm(farmAuthBump,farmTreasuryBump,RewardType.Fixed,LPType.RESPECT,farm_config,max_counts,fee_wallet,
+        {
+          accounts: {
+            farm: farm.publicKey,
+            farmManager: wallet.publicKey,
+            farmAuthority: farmAuth,
+            rewardAPot: rewardAPot,
+            rewardAMint: rewardAMint,
+            farmTreasuryToken: farmTreasuryToken,
+            bank: bank.publicKey,
+            gemBank: gem_bank,
+            payer: wallet.publicKey,
+            feeAcc: fee_wallet,
+            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          },
+          signers: signers
+        }
+      );
+      // const whitelistConfigAccounts = await stakeProgram.account.farm.fetch(farm.publicKey);
+      // console.log(whitelistConfigAccounts);
+      console.log('init farm signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  // Farm Manager should call this
+  const authorizeFunder = async () => {
+    const stakeProgram = await getStakeProgram();
+    try {
+      const funder_to_authorize = new PublicKey("4QrQYy1MVK6xBKAQKbvX3TjznnhU3vZfvaAbKJ9ZNjS4");
+      const [authorizationProof] = await funderToAuthorizePDA(
+        FARM_ID,
+        funder_to_authorize
+      );
+      console.log(authorizationProof.toBase58());
+      const farms = await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58() + ' ' + farms);
+      console.log(farms);
+      const wallet_create = await stakeProgram.rpc.authorizeFunder(
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmManager: wallet.publicKey,
+            funderToAuthorize: funder_to_authorize,
+            authorizationProof: authorizationProof,
+            systemProgram: SystemProgram.programId,
+          }
+        }
+      );
+      console.log('authorize funder signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  // Farmer should call this
+  const fundReward = async () => {
+    const stakeProgram = await getStakeProgram();
+    try {
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const [rewardAPot, rewardAPotBump] = await findRewardsPotPDA(
+        FARM_ID,
+        rewardAMint
+      );
+      const funder_to_authorize = new PublicKey("4QrQYy1MVK6xBKAQKbvX3TjznnhU3vZfvaAbKJ9ZNjS4");
+      const [authorizationProof, authorizationProofBump] = await funderToAuthorizePDA(
+        FARM_ID,
+        funder_to_authorize
+      );
+      console.log(authorizationProof.toBase58());
+      const rewardSource = await findAssociatedTokenAddress(funder_to_authorize,rewardAMint);
+      console.log(rewardSource.toBase58());
+      // const rewardSource = new PublicKey("511ZCh4sKsZhAtytqiVheeK2KZK6Tr96S8sTabudL2aT");
+      const farms =
+        await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58() + ' ' + farms);
+      console.log(farms);
+      // tier1: t1RewardRate
+          //   ? {
+          //       rewardRate: new BN(t1RewardRate),
+          //       requiredTenure: new BN(t1RequiredTenure!),
+          //     }
+          //   : null,
+          // tier2: t2RewardRate
+          //   ? {
+          //       rewardRate: new BN(t2RewardRate),
+          //       requiredTenure: new BN(t2RequiredTenure!),
+          //     }
+          //   : null,
+          // tier3: t3RewardRate
+          //   ? {
+          //       rewardRate: new BN(t3RewardRate),
+          //       requiredTenure: new BN(t3RequiredTenure!),
+          //     }
+          //   : null,
+      const config: FixedRateConfig = {
+        schedule: {
+          baseRate: new BN(1),
+          tier1: null,
+          tier2:null,
+          tier3:null,
+          denominator: new BN(1)
+        },
+        amount: new BN(100 * 1000000000),
+        durationSec: new BN(100),
+      };
+      const lpRateConfig: LpRateConfig = {
+        lpSchedule: {
+          lpBaseRate: new BN(1),
+          lpTier1: null,
+          lpTier2:null,
+          lpTier3:null,
+          lpDenominator: new BN(1)
+        },
+        lpDurationSec: new BN(100),
+      };
+      const prob1Config: ProbTierConfig = {
+        probableRewardRate: new BN(1),
+        probability: new BN(1)
+      }
+      const probConfig: ProbableRateConfig = {
+        probableSchedule: {
+          prob1: prob1Config,
+          prob2: prob1Config,
+          prob3:prob1Config,
+          prob4:prob1Config,
+          prob5:prob1Config,
+          denominator: new BN(1)
+        },
+        probableAmount: new BN(100),
+        probableDurationSec: new BN(100),
+      };
+      const wallet_create = await stakeProgram.rpc.fundReward(authorizationProofBump, rewardAPotBump, config, probConfig,lpRateConfig,
+        {
+          accounts: {
+            farm: FARM_ID,
+            authorizationProof: authorizationProof,
+            authorizedFunder: wallet.publicKey,
+            rewardPot: rewardAPot,
+            rewardSource: rewardSource,
+            rewardMint: rewardAMint,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          }
+        }
+      );
+      console.log('fund reward signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const getFarmers = async () => {
+    if(wallet && wallet.connected) {
+      const stakeProgram = await getStakeProgram();
+      const [farmerPda] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const farmers = await stakeProgram.account.farmer.fetch(farmerPda);
+      console.log(farmers);
+    }
+  }
+
+  const getFarms = async () => {
+    if(wallet && wallet.connected) {
+      const stakeProgram = await getStakeProgram();
+      const farms = await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log(farms);
+    }
+  }
+
+  const getNFTs = async () => {
+    // const connectionMetaplex = new Connection(
+    //   "https://api.metaplex.solana.com",
+    //   "confirmed"
+    // );
+    // const metadata:any = Metadata;
+    // // const walletAddress = "6vRx1iVZo3xfrBHdpvuwArL2jucVj9j9nLpd2VUTTGMG"
+    // const nftsmetadata = await metadata.findDataByOwner(connectionMetaplex, wallet.publicKey?.toBase58());
+    // console.log(nftsmetadata);
+    // const connection = new Connection(clusterApiUrl("devnet"));
+    // const wallet = anchor.web3.Keypair.generate();
+
+    // const metaplex = Metaplex.make(connection).use(keypairIdentity(wallet));
+    // const myNfts = await metaplex.nfts().findAllByOwner(wallet.publicKey);
+    // console.log(myNfts);
+    // const nftsmetadata = await Metadata.findDataByOwner(props.connection, wallet.publicKey);
+    // console.log(nftsmetadata)
+    setCollectionId(COLLECTION_ID);
+    if (wallet && wallet.connected && !gotNfts) {
+      const wallet_t:any = wallet;
+      const connect = createConnectionConfig(clusterApiUrl("devnet"));
+      const provider = new anchor.Provider(
+        props.connection,
+        wallet_t,
+        anchor.Provider.defaultOptions()
+      );
+      // const provider = getProvider();
+      let ownerToken = wallet_t.publicKey;
+      const result = isValidSolanaAddress(ownerToken);
+      console.log("result", result);
+      const allNfts = await getParsedNftAccountsByOwner({
+        publicAddress: ownerToken,
+        connection: connect,
+        // serialization: true,
+      });
+      let temp_nfts:any = [];
+      // console.log(allNfts);
+      for (let index = 0; index < allNfts.length; index++) {
+        const nft = allNfts[index];
+        var creators = nft.data.creators;
+        var is_ours = false;
+        if (nft.updateAuthority == "Bi4UpEtKxnHwCw7b9xkMCouGT6xLNm8nixs2fTmxTevs") {
+          is_ours = true;
+          for (let iindex = 0; iindex < creators.length; iindex++) {
+            const element = creators[iindex];
+            if (element.share == 0) {
+              // setCollectionId(element.address);
+            }
+          }
+        }
+        if (is_ours) {
+          var xhr = new XMLHttpRequest();
+          xhr.addEventListener("readystatechange", function() {
+            if(this.readyState === 4) {
+              // console.log(this.responseText);
+              var obj:any = {
+                id:temp_nfts.length,
+                name: nft.data.name,
+                link: JSON.parse(this.responseText).image,
+                mint: nft.mint,
+                updateAuthority: nft.updateAuthority,
+                creator: nft.data.creators[0].address
+              }
+              temp_nfts.push(obj);
+              setNFts(temp_nfts!);
+              console.log(allNfts);
+            }
+          });
+          xhr.open("GET", nft.data.uri);
+          xhr.send();
+        }
+      }
+      // console.log(temp_nfts);
+      setGotNfts(true);
+    }
+  }
+
+  const initFarmer = async () => {
+    const stakeProgram = await getStakeProgram();
+    const farmers =
+        await stakeProgram.account.farmer.all();
+      console.log(farmers);
+    try {
+      const funder_to_authorize = new PublicKey("4QrQYy1MVK6xBKAQKbvX3TjznnhU3vZfvaAbKJ9ZNjS4");
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const fee_wallet = new PublicKey('Bi4UpEtKxnHwCw7b9xkMCouGT6xLNm8nixs2fTmxTevs');
+      const [farmerPda] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const farms:any =
+        await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58());
+      const [farmerVaultPda] = await farmerVaultPDA(
+        farms.bank,
+        wallet.publicKey!
+      );
+      // console.log(JSON.parse(farms).bank);
+      const wallet_create = await stakeProgram.rpc.initFarmer(
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmer: farmerPda,
+            identity: wallet.publicKey,
+            bank: farms.bank,
+            vault: farmerVaultPda,
+            gemBank: gem_bank,
+            payer: wallet.publicKey,
+            feeAcc: fee_wallet,
+            systemProgram: SystemProgram.programId,
+          }
+        }
+      );
+      console.log('init farmer signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const refreshFarmer = async () => {
+    const stakeProgram = await getStakeProgram();
+    const farmers = await stakeProgram.account.farmer.all();
+    console.log(farmers);
+    try {
+      const [farmerPda, farmerBump] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const farms:any =
+        await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58());
+      const wallet_create = await stakeProgram.rpc.refreshFarmer(farmerBump,
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmer: farmerPda,
+            identity: wallet.publicKey
+          }
+        }
+      );
+      getFarmers();
+      console.log('refresh farmer signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const refreshFarmerSigned = async () => {
+    const stakeProgram = await getStakeProgram();
+    const farmers = await stakeProgram.account.farmer.all();
+    console.log(farmers);
+    try {
+      const [farmerPda, farmerBump] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const farms:any =
+        await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58());
+      const wallet_create = await stakeProgram.rpc.refreshFarmerSigned(farmerBump,true,
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmer: farmerPda,
+            identity: wallet.publicKey
+          }
+        }
+      );
+      getFarmers();
+      console.log('refresh farmer signed signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const addRaritiesToBank = async () => {
+    const stakeProgram = await getStakeProgram();
+    const farmers = await stakeProgram.account.farmer.all();
+    console.log(farmers);
+    try {
+      const [farmerPda, farmerBump] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      let nft;
+      if (stakedNft) {
+        nft = stakedNft;
+      }
+      else {
+        nft = nfts[0];
+      }
+      const [farmAuth, farmAuthBump] = await findFarmAuthorityPDA(FARM_ID);
+      const farms:any = await stakeProgram.account.farm.fetch(FARM_ID);
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      console.log('farm with ' + FARM_ID.toBase58());
+      const rarityConfig: RarityConfig = {
+        mint: new PublicKey("8Gxjd3SYeVrASeHWJCGHjo9Lq1eRLgt2qtY5xkLEXLxq"),
+        rarityPoints: new BN(1)
+      }
+      const rarityConfigs = [rarityConfig];
+      const remainingAccounts = [];
+      const [gemRarity] = await gemBoxRarityPda(farms.bank, new PublicKey("8Gxjd3SYeVrASeHWJCGHjo9Lq1eRLgt2qtY5xkLEXLxq"));
+      //add mint
+      remainingAccounts.push({
+        pubkey: new PublicKey("8Gxjd3SYeVrASeHWJCGHjo9Lq1eRLgt2qtY5xkLEXLxq"),
+        isWritable: false,
+        isSigner: false,
+      });
+      //add rarity pda
+      remainingAccounts.push({
+        pubkey: gemRarity,
+        isWritable: true,
+        isSigner: false,
+      });
+      const wallet_create = await stakeProgram.rpc.addRaritiesToBank(farmAuthBump,rarityConfigs,
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmManager: farms.farmManager,
+            farmAuthority: farmAuth,
+            bank: farms.bank,
+            gemBank: gem_bank,
+            farmer: farmerPda,
+            systemProgram: SystemProgram.programId
+          },
+          remainingAccounts
+        }
+      );
+      getFarmers();
+      console.log('add rarities to bank signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const flashDeposit = async () => {
+    const stakeProgram = await getStakeProgram();
+    const bankProgram = await getBankProgram();
+    let tokens = await getTokensByOwner(wallet.publicKey!);
+    const farmers =
+        await stakeProgram.account.farmer.all();
+    try {
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const fee_wallet = new PublicKey('Bi4UpEtKxnHwCw7b9xkMCouGT6xLNm8nixs2fTmxTevs');
+      const [farmerPda, farmerBump] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const farms:any = await stakeProgram.account.farm.fetch(FARM_ID);
+      const [farmerVaultPda, farmerVaultBump] = await farmerVaultPDA(
+        farms.bank,
+        wallet.publicKey!
+      );
+      let nft;
+      if (stakedNft) {
+        nft = stakedNft;
+      }
+      else {
+        nft = nfts[0];
+      }
+      const vaults = await bankProgram.account.vault.all();
+      console.log(vaults[0].account.authoritySeed.toBase58());
+      const [gemBoxPdaVal] = await gemBoxPda(
+        farmerVaultPda,
+        new PublicKey(nft.mint)
+      );
+      const [gemDepositBoxPdaVal] = await gemDepositBoxPda(
+        farmerVaultPda,
+        new PublicKey(nft.mint)
+      );
+      const [gemBoxRarityPdaVal, gemBoxrarityBump] = await gemBoxRarityPda(
+        farms.bank,
+        new PublicKey(nft.mint)
+      );
+      const [vaultAuthorityPdaVal, vaultAuthorityBump] = await vaultAuthorityPda(
+        farmerVaultPda
+      );
+      const gem_mint = new PublicKey(nft.mint);
+      // const address_to_whitelist = new PublicKey(collectionId);
+      // const [whitelistProofPdaVal] = await whitelistProofPda(farms.bank,address_to_whitelist);
+      const [mintWhitelistProofPdaVal] = await whitelistProofPda(farms.bank,new PublicKey(nft.mint));
+      const [creatorWhitelistProofPdaVal] = await whitelistProofPda(farms.bank,new PublicKey(nft.creator));
+      const gem_source_old = await findAssociatedTokenAddress(wallet.publicKey!,new PublicKey(nft.mint));
+      console.log(gem_source_old.toBase58());
+      const gem_source_obj = await props.connection.getParsedTokenAccountsByOwner(wallet.publicKey!, {
+        mint: new PublicKey(nft.mint),
+      });
+      console.log(gem_source_obj.value[0].pubkey.toBase58());
+      const gem_source = gem_source_obj.value[0].pubkey;
+      const [gem_metadata] = await tokenMetadataPda(gem_mint);
+      console.log(gem_metadata);
+      const remainingAccounts = [];
+      if (mintWhitelistProofPdaVal)
+      remainingAccounts.push({
+        pubkey: mintWhitelistProofPdaVal,
+        isWritable: false,
+        isSigner: false,
+      });
+      if (gem_metadata)
+      remainingAccounts.push({
+        pubkey: gem_metadata,
+        isWritable: false,
+        isSigner: false,
+      });
+      console.log(nft.creator);
+      // console.log(whitelistProofPdaVal.toBase58());
+      if (creatorWhitelistProofPdaVal) {
+        remainingAccounts.push({
+          pubkey: creatorWhitelistProofPdaVal,
+          isWritable: false,
+          isSigner: false,
+        });
+      }
+      console.log(vaults[0].account.authority.toBase58());
+      console.log(vaultAuthorityPdaVal.toBase58());
+      console.log(farmerBump);
+      console.log(vaultAuthorityBump);
+      console.log(gemBoxrarityBump);
+      const wallet_create = await stakeProgram.rpc.flashDeposit(farmerBump, vaultAuthorityBump,gemBoxrarityBump, new BN(1), 
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmAuthority: farms.farmAuthority,
+            farmer: farmerPda,
+            identity: wallet.publicKey,
+            bank: farms.bank,
+            vault: farmerVaultPda,
+            vaultAuthority: vaultAuthorityPdaVal,
+            gemBox: gemBoxPdaVal,
+            gemDepositReceipt: gemDepositBoxPdaVal,
+            gemSource: gem_source,
+            gemMint: gem_mint,
+            gemRarity: gemBoxRarityPdaVal,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+            rent: anchor.web3.SYSVAR_RENT_PUBKEY,
+            gemBank: gem_bank,
+            feeAcc: fee_wallet
+          },
+          remainingAccounts
+        }
+      );
+      stakeNft();
+      console.log('flash deposit signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  // Farm Manager should call this
+  const addToBankWhitelist = async () => {
+    const stakeProgram = await getStakeProgram();
+    const [farmerPda, farmerBump] = await farmerPDA(
+      FARM_ID,
+      wallet.publicKey!
+    );
+    // const farmers =
+    //     await stakeProgram.account.farmer.all();
+    //   console.log(farmers[0].publicKey.toBase58());
+    //   console.log(farmers[0].account.identity.toBase58());
+    try {
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const [farmAuth, farmAuthBump] = await findFarmAuthorityPDA(FARM_ID);
+      const farms:any =
+        await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58());
+      let nft;
+      if (stakedNft) {
+        nft = stakedNft;
+      }
+      else {
+        nft = nfts[0];
+      }
+      const address_to_whitelist = new PublicKey(collectionId);
+      const [whitelistProofPdaVal] = await whitelistProofPda(farms.bank,address_to_whitelist);
+      const wallet_create = await stakeProgram.rpc.addToBankWhitelist(farmAuthBump, 1, 
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmManager: farms.farmManager,
+            farmAuthority: farmAuth,
+            bank: farms.bank,
+            addressToWhitelist: address_to_whitelist,
+            whitelistProof: whitelistProofPdaVal,
+            systemProgram: SystemProgram.programId,
+            gemBank: gem_bank
+          }
+        }
+      );
+      console.log('add to whitelist bank signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const stakeNft = async () => {
+    const stakeProgram = await getStakeProgram();
+    const [farmerPda, farmerBump] = await farmerPDA(
+      FARM_ID,
+      wallet.publicKey!
+    );
+    const farmers =
+        await stakeProgram.account.farmer.all();
+      console.log(farmers[0].publicKey.toBase58());
+      console.log(farmers[0].account.identity.toBase58());
+    try {
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const fee_wallet = new PublicKey('Bi4UpEtKxnHwCw7b9xkMCouGT6xLNm8nixs2fTmxTevs');
+      const [farmAuth, farmAuthBump] = await findFarmAuthorityPDA(FARM_ID);
+      const farms:any =
+        await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58());
+      let nft;
+      if (stakedNft) {
+        nft = stakedNft;
+      }
+      else {
+        nft = nfts[0];
+      }
+      const [farmerPda, farmerBump] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const [farmerVaultPda, farmerVaultBump] = await farmerVaultPDA(
+        farms.bank,
+        wallet.publicKey!
+      );
+      const address_to_whitelist = new PublicKey(collectionId);
+      const [whitelistProofPdaVal] = await whitelistProofPda(farms.bank,address_to_whitelist);
+      const wallet_create = await stakeProgram.rpc.stake(farmAuthBump, farmerBump, 
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmAuthority: farms.farmAuthority,
+            farmer: farmerPda,
+            identity: wallet.publicKey,
+            bank: farms.bank,
+            vault: farmerVaultPda,
+            gemBank: gem_bank,
+            feeAcc: fee_wallet,
+            systemProgram: SystemProgram.programId,
+          }
+        }
+      );
+      console.log('stake signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
+  const UnStakeNft = async () => {
+    const stakeProgram = await getStakeProgram();
+    const [farmerPda, farmerBump] = await farmerPDA(
+      FARM_ID,
+      wallet.publicKey!
+    );
+    const farmers =
+        await stakeProgram.account.farmer.all();
+      console.log(farmers[0].publicKey.toBase58());
+      console.log(farmers[0].account.identity.toBase58());
+    try {
+      const gem_bank = new PublicKey('F4SDKmdyr6pzESeRuew4CkWj2qpTZ1xbn6o7Bvsa9297');
+      const fee_wallet = new PublicKey('Bi4UpEtKxnHwCw7b9xkMCouGT6xLNm8nixs2fTmxTevs');
+      const rewardAMint = new PublicKey('x4zmbszSajZe8Qg8H1J9s1hMsrDTYjPDe4qp8fJcgMa');
+      const [farmAuth, farmAuthBump] = await findFarmAuthorityPDA(FARM_ID);
+      const farms:any = await stakeProgram.account.farm.fetch(FARM_ID);
+      console.log('farm with ' + FARM_ID.toBase58());
+      let nft;
+      if (stakedNft) {
+        nft = stakedNft;
+      }
+      else {
+        nft = nfts[0];
+      }
+      const [farmerPda, farmerBump] = await farmerPDA(
+        FARM_ID,
+        wallet.publicKey!
+      );
+      const [farmerVaultPda, farmerVaultBump] = await farmerVaultPDA(
+        farms.bank,
+        wallet.publicKey!
+      );
+      const [farmTreasury, farmTreasuryBump] = await findFarmTreasuryPDA(
+        FARM_ID
+      );
+      const [farmTreasuryToken, farmTreasuryTokenBump] = await findFarmTreasuryTokenPDA(
+        FARM_ID,
+        rewardAMint
+      );
+      console.log(farms.farmAuthority.toBase58());
+      console.log(farmTreasury.toBase58());
+      console.log(farmerPda.toBase58());
+      console.log(farmerVaultPda.toBase58());
+      console.log(gem_bank.toBase58());
+      const wallet_create = await stakeProgram.rpc.unstake(farmAuthBump, farmTreasuryTokenBump, farmerBump, false,
+        {
+          accounts: {
+            farm: FARM_ID,
+            farmAuthority: farms.farmAuthority,
+            farmTreasury: farmTreasuryToken,
+            farmer: farmerPda,
+            identity: wallet.publicKey,
+            bank: farms.bank,
+            vault: farmerVaultPda,
+            gemBank: gem_bank,
+            feeAcc: fee_wallet,
+            tokenProgram: TOKEN_PROGRAM_ID,
+            systemProgram: SystemProgram.programId,
+          }
+        }
+      );
+      console.log('unstake signature : ' + wallet_create);
+    } catch (error) {
+      console.log("Transaction error: ", error);
+    }
+  }
+
   const showTeamInfoHover = async (id: any) => {
     setShowTeamInfo(true);
     setTeamInfoMember(id);
@@ -871,6 +2001,7 @@ const Home = (props: HomeProps) => {
       setShowMobileDoor(true);
       setMobileDoor(id);
       setMenuOpen(false);
+      setShowStakeRoom(true);
       setClassNameState("main-stake-room-door");
     } else {
       setMenuOpen(false);
@@ -892,12 +2023,14 @@ const Home = (props: HomeProps) => {
       setClassNameState(n);
       setLogoAlphaLoading(false);
       setShowAlphaRoom(false);
+      setShowStakeRoom(false);
       setShowTeamRoom(false);
       setShowMobileDoor(true);
     } else {
       setClassNameState("main-bg-after-door-open");
       setLogoAlphaLoading(false);
       setShowAlphaRoom(false);
+      setShowStakeRoom(false);
       setShowTeamRoom(false);
     }
   };
@@ -1441,11 +2574,12 @@ const Home = (props: HomeProps) => {
     setClassNameState("main-bg-after-door-open");
     setShowAlphaRoom(false);
     setShowTeamRoom(false);
+    setShowStakeRoom(false);
     setShowMobileDoor(false);
   };
 
   const handleMobileHome = async () => {
-    if (showAlphaRoom || showTeamRoom) {
+    if (showAlphaRoom || showTeamRoom || showStakeRoom) {
       closeAlphaRoom();
     } else {
       closeForm();
@@ -1456,7 +2590,38 @@ const Home = (props: HomeProps) => {
     setMenuOpen(true);
   };
 
-  const openAlphaRoom = async () => {
+  const openStakeRoom = async (id:any) => {
+    setCurrentStakeRoom(id);
+    setShowStakeCity(true);
+  };
+
+  const stakeFromCity = async () => {
+    if (currentStakeRoom == 1) {
+      setStakedCity('MAHANOTHIA')
+    } else if (currentStakeRoom == 2) {
+      setStakedCity('RAUDCHERI')
+    } else if (currentStakeRoom == 3) {
+      setStakedCity('SAN CHETOS')
+    } else if (currentStakeRoom == 4) {
+      setStakedCity('MAGNEXIA')
+    } else if (currentStakeRoom == 5) {
+      setStakedCity('THE BASEMENT')
+    }
+    setShowStakeCity(false);
+    setShowStaking(true);
+  }
+
+  const closeStakeRoom = async (id:any) => {
+    setShowStakeCity(false);
+    setShowStaking(false);
+  };
+
+  const closeStakeCity = async (id:any) => {
+    setShowStakeCity(false);
+    setShowStaking(false);
+  };
+
+  const openAlphaRoom = async (key:string) => {
     if (isMobile) {
       if (mobileDoor === "ALPHA") {
         setClassNameState("main-bg-after-door-open black-bg");
@@ -1466,20 +2631,34 @@ const Home = (props: HomeProps) => {
           setClassNameState("alpha-room");
           setShowTeamRoom(false);
           setShowAlphaRoom(true);
+          setShowStakeRoom(false);
           setShowMobileDoor(false);
         }, 600);
       } 
-      // else if (mobileDoor === "TEAM") {
-      //   setClassNameState("main-bg-after-door-open black-bg");
-      //   setLogoAlphaLoading(true);
-      //   setTimeout(function () {
-      //     setLogoAlphaLoading(false);
-      //     setClassNameState("team-room");
-      //     setShowTeamRoom(true);
-      //     setShowAlphaRoom(false);
-      //     setShowMobileDoor(false);
-      //   }, 600);
-      // }
+      else if (mobileDoor === "TEAM") {
+        setClassNameState("main-bg-after-door-open black-bg");
+        setLogoAlphaLoading(true);
+        setTimeout(function () {
+          setLogoAlphaLoading(false);
+          setClassNameState("team-room");
+          setShowTeamRoom(true);
+          setShowAlphaRoom(false);
+          setShowStakeRoom(false);
+          setShowMobileDoor(false);
+        }, 600);
+      }
+      else if (mobileDoor === "STAKE") {
+        setClassNameState("main-bg-after-door-open black-bg");
+        setLogoAlphaLoading(true);
+        setTimeout(function () {
+          setLogoAlphaLoading(false);
+          setClassNameState("team-room");
+          setShowTeamRoom(false);
+          setShowAlphaRoom(false);
+          setShowStakeRoom(true);
+          setShowMobileDoor(false);
+        }, 600);
+      }
       else {
         var arr = [
           "Patience is key",
@@ -1497,14 +2676,73 @@ const Home = (props: HomeProps) => {
         }, 900);
       }
     } else {
-      setClassNameState("main-bg-after-door-open black-bg");
-      setLogoAlphaLoading(true);
-      setTimeout(function () {
-        setClassNameState("alpha-room");
-        setLogoAlphaLoading(false);
-        setShowAlphaRoom(true);
-        setShowMobileDoor(false);
-      }, 600);
+      if (key == 'alpha') {
+        setClassNameState("main-bg-after-door-open black-bg");
+        setLogoAlphaLoading(true);
+        setTimeout(function () {
+          setClassNameState("alpha-room");
+          setLogoAlphaLoading(false);
+          setShowAlphaRoom(true);
+          setShowStakeRoom(false);
+          setShowMobileDoor(false);
+        }, 600);
+      }
+      else if (key == 'team') {
+        setClassNameState("main-bg-after-door-open black-bg");
+        setLogoAlphaLoading(true);
+        setTimeout(function () {
+          setClassNameState("team-room");
+          setLogoAlphaLoading(false);
+          setShowAlphaRoom(false);
+          setShowTeamRoom(true);
+          setShowStakeRoom(false);
+          setShowMobileDoor(false);
+        }, 600);
+      }
+      else if (key == 'stake') {
+        setClassNameState("main-bg-after-door-open black-bg");
+        setLogoAlphaLoading(true);
+        setTimeout(function () {
+          setClassNameState("stake-room");
+          setLogoAlphaLoading(false);
+          setShowAlphaRoom(false);
+          setShowTeamRoom(false);
+          setShowStakeRoom(true);
+          setShowMobileDoor(false);
+        }, 600);
+        setTimeout(function() {
+          if (roomOneInfoClass == "stake-room-info-one") {
+            setRoomOneInfoClass("stake-room-info-one flip");
+          }
+          else {
+            setRoomOneInfoClass("stake-room-info-one");
+          }
+          if (roomTwoInfoClass == "stake-room-info-one") {
+            setRoomTwoInfoClass("stake-room-info-one flip");
+          }
+          else {
+            setRoomTwoInfoClass("stake-room-info-one");
+          }
+          if (roomThreeInfoClass == "stake-room-info-one") {
+            setRoomThreeInfoClass("stake-room-info-one flip");
+          }
+          else {
+            setRoomThreeInfoClass("stake-room-info-one");
+          }
+          if (roomFourInfoClass == "stake-room-info-one") {
+            setRoomFourInfoClass("stake-room-info-one flip");
+          }
+          else {
+            setRoomFourInfoClass("stake-room-info-one");
+          }
+          if (roomFiveInfoClass == "stake-room-info-one") {
+            setRoomFiveInfoClass("stake-room-info-one flip");
+          }
+          else {
+            setRoomFiveInfoClass("stake-room-info-one");
+          }
+        },3000) 
+      }
     }
   };
 
@@ -1593,9 +2831,10 @@ const Home = (props: HomeProps) => {
           </div>
         )}
         {!logoLoading &&
-          !showMobileDoor &&
+          !showMobileDoor && 
           !logoAlphaLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !isMobile && (
             <div className="white-paper-div">
@@ -1611,12 +2850,24 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
             <div
-              onClick={() => showToaster(5)}
-              // onClick={withdrawFunds}
+              // onClick={() => openAlphaRoom('stake')}
+              // onClick={() => initFarm()}
+              // onClick={() => authorizeFunder()}
+              // onClick={() => fundReward()}
+              // onClick={() => initFarmer()}
+              // onClick={() => getNFTs()}
+              // onClick={() => flashDeposit()}
+              // onClick={() => addToBankWhitelist()}
+              // onClick={() => stakeNft()}
+              // onClick={() => UnStakeNft()}
+              // onClick={() => refreshFarmer()}
+              // onClick={() => refreshFarmerSigned()}
+              onClick={() => addRaritiesToBank()}
               className="stake-room-div"
             ></div>
           )}
@@ -1640,10 +2891,11 @@ const Home = (props: HomeProps) => {
             </div>
           )}
         {!logoLoading && isMobile && showMobileDoor && !logoAlphaLoading && (
-          <div className="mobile-room-div" onClick={openAlphaRoom}></div>
+          <div className="mobile-room-div" onClick={() => openAlphaRoom('')}></div>
         )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1655,22 +2907,25 @@ const Home = (props: HomeProps) => {
         {!logoLoading &&
           !showAlphaRoom &&
           !showTeamRoom &&
+          !showStakeRoom &&
           !logoAlphaLoading &&
           !isMobile && (
             <div
-              onClick={() => openAlphaRoom()}
+              onClick={() => openAlphaRoom('alpha')}
               className="alpha-room-div"
             ></div>
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
-            <div onClick={() => showToaster(5)} className="team-room-div"></div>
+            <div onClick={() => openAlphaRoom('team')} className="team-room-div"></div>
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1678,6 +2933,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !showMobileDoor && (
@@ -1721,11 +2977,13 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && <div className="hologram-setup-div"></div>}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1741,6 +2999,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1755,6 +3014,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1769,6 +3029,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1786,6 +3047,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1805,6 +3067,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1813,6 +3076,7 @@ const Home = (props: HomeProps) => {
           )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1829,6 +3093,7 @@ const Home = (props: HomeProps) => {
         )}
         {!logoLoading &&
           !showAlphaRoom &&
+          !showStakeRoom &&
           !showTeamRoom &&
           !logoAlphaLoading &&
           !isMobile && (
@@ -1855,6 +3120,18 @@ const Home = (props: HomeProps) => {
           !showMobileDoor &&
           !isMobile && (
             <div className="close-alpha-room" onClick={closeAlphaRoom}>
+              <img alt="close" src={CloseAlpha} />
+            </div>
+          )}
+        {showStakeRoom &&
+          !showStakeCity &&
+          !showStaking &&
+          !showStakeDashboard &&
+          !logoAlphaLoading &&
+          !logoLoading &&
+          !showMobileDoor &&
+          !isMobile && (
+            <div className="close-stake-room" onClick={closeAlphaRoom}>
               <img alt="close" src={CloseAlpha} />
             </div>
           )}
@@ -2089,7 +3366,7 @@ const Home = (props: HomeProps) => {
             </Carousel>
           </div>
         )}
-        {showAlphaRoom && !logoAlphaLoading && !logoLoading && !showMobileDoor && (
+        {showAlphaRoom && !showTeamRoom && !showStakeRoom && !logoAlphaLoading && !logoLoading && !showMobileDoor && (
           <div className="Backdrop-other">
             <div
               className="alpha-room-phil-one"
@@ -2099,6 +3376,256 @@ const Home = (props: HomeProps) => {
                 <label className="typing-text story-line">The Story</label>
               </div>
             </div>
+          </div>
+        )}
+        {!showAlphaRoom && !showTeamRoom && showStakeRoom && !logoAlphaLoading && !logoLoading && !showMobileDoor && (
+          <div className="">
+            <div className="stake-room-1"></div>
+            <div className="stake-room-2"></div>
+            <div className="stake-room-3"></div>
+            <div className="stake-room-4"></div>
+            <div className="stake-room-5"></div>
+            <div className="stake-room-6"></div>
+            <div className="stake-room-7"></div>
+            <div className="staking-room-one" onClick={() => openStakeRoom(1)}>
+              <div className={roomOneInfoClass}>
+                <h2>Mahanothia</h2>
+                {/* <label>The oldest of the cities, ruled by the wisest and most trusted royal family in the whole of Alphazex, the Avrupans. The culture, the architecture style, the communities, the military, all designed so perfectly that even after a thousand years, they stand the test of time. Crime doesn't exist in Mahanothia and so, once your character enters this stoic city for their mission they are sure to leave it with guaranteed rewards.</label> */}
+              </div>
+            </div>
+            <div className="staking-room-two" onClick={() => openStakeRoom(2)}>
+              <div className={roomThreeInfoClass}>
+                <h2>San Chetos</h2>
+                {/* <label>Ancestors of Jesse might refer to this city as a mix of Las Vegas, Monte Carlo, Cuba and Dubai. Filled with dazzling lights, gorgeous people and most importantly fuck tons of money, but equally surrounded with gambling dens, mafia and drugs. Just as quickly you can rise to top of the world in this city, you'll fall even quicker if you don't mind your steps. If you have guts enough to send your character to this city, you could become filthy fucking rich or dead fucking poor.</label> */}
+              </div>
+            </div>
+            <div className="staking-room-three" onClick={() => openStakeRoom(3)}>
+              <div className={roomThreeInfoClass}>
+                <h2>The Basement</h2>
+                {/* <label>You can either choose to send your character on a mission or let them meditate in the silence of Alpha Basement.<br/>While in the basement, as meditation relaxes the body and strengthens the mind, the whole process takes a long amount of time, but remember, its rewards are simply unimaginable!<br/>The character doesn't earn any $GLCH token but they earn 2000 +RESPECT/ week.<br/>Since the whole process requires tons of focus and full commitment of the body and the soul, should you choose to send your character here, he'll only earn his rewards after a week. If you pull him out before the week ends, there'll be no rewards.</label> */}
+              </div>
+            </div>
+            <div className="staking-room-four" onClick={() => openStakeRoom(4)}>
+              <div className={roomFourInfoClass}>
+                <h2>Magnexia</h2>
+                {/* <label>Not much is known about this mysterious city, except that no human has been known to have entered this city after its formation during the Great Cywar of 3333. Rumours say that only cyborgs live here and even that the city doesn't really follow a set of physical laws. You can only choose to send your character on a mission here if he is a cyborg (trait).</label> */}
+              </div>
+            </div>
+            <div className="staking-room-five" onClick={() => openStakeRoom(5)}>
+              <div className={roomTwoInfoClass}>
+                <h2>Raudcheri</h2>
+                {/* <label>Once the most glowing and growing hub of Alphazex, Raudcheri has seen equal shares of glorious glamours and glitchy glooms. Ruled by the Nichas, the city structure and people were divided in the early riots of 4242. The north sporting the worst of the worst, the most corrupt and evil and the south blessed with angels, the most kind hearted. So if you choose to send your character on a mission in this city, there's no telling to what kind of adventures and people he'll have to deal with and so no guarantees of the amount of rewards.</label> */}
+              </div>
+            </div>
+            <div className="staking-room-seven" onClick={() => setShowStakeDashboard(true)}>
+            <button className="outside-stake-btn">General Dashboard</button>
+            </div> 
+            {!wallet.connected &&
+            <div className="staking-room-six">
+              <WalletDialogButton className="Connect-Wallet-btn">
+                Connect Wallet
+              </WalletDialogButton>
+            </div> 
+            }
+            {wallet.connected &&
+            <div className="staking-room-six" onClick={openStaking}>
+              <button className="outside-stake-btn">Stake Now</button>
+            </div> 
+            }
+          </div>
+        )}
+        {showStaking && (
+          <div className="Backdrop-other-mint">
+            <OutsideClickHandler onOutsideClick={closeStaking}>
+              <div className="stake-room-opened">
+                <img className="stake-close-image" onClick={closeStaking} src={Close} />
+                {nftStakeStep == 0 && 
+                <div className="pull-left full-width full-height">
+                    <div className="stake-room-header">
+                      <h2>NFT Selection</h2>
+                    </div>
+                    <div className="nft-parent-div">
+                      {nfts && nfts.length > 0 && nfts.map(function (item:any, i:any) {
+                        return (
+                          <div className="nft-div" style={{borderColor: stakedNft == item ? "white": "transparent"}} onClick={() => setStakedNft(item)}>
+                            <img src={item.link} />
+                            <label>{item.name}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {stakedNft && 
+                    <div className="stake-button-div"> 
+                      <button className="nft-select-button" onClick={nextStepStake}>Next</button>
+                    </div>
+                    }
+                </div>
+                }
+                {nftStakeStep == 1 && 
+                <div className="pull-left full-width full-height">
+                    <div className="stake-room-header">
+                      <h2>City Selection</h2>
+                    </div>
+                    <div className="nft-parent-div">
+                      {citys.map(function (item:any, i) {
+                        return (
+                          <div className="nft-div" style={{borderColor: stakedCity == item.name ? "white": "transparent"}} onClick={() => setStakedCity(item.name)}>
+                            <img src={item.link} />
+                            <label>{item.name}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {stakedCity && stakedCity.length > 0 && 
+                    <div className="stake-button-div"> 
+                      <button className="nft-select-button" onClick={nextStepStake}>Next</button>
+                    </div>
+                    }
+                </div>
+                }
+                {nftStakeStep == 2 && 
+                <div className="pull-left full-width full-height">
+                    <div className="nft-deal-div">
+                      <h2 className="deal-finalizing-text">Finalizing the Deal</h2>
+                    </div>
+                </div>
+                }
+                {nftStakeStep == 3 && 
+                <div className="pull-left full-width full-height">
+                    <div className="nft-parent-div">
+                      <h2 className="stake-congrats-header">Congratulations !!!</h2>
+                      <label className="stake-congrats-text">Your {stakedNft.name} has been<br/>successfully staked in<br/>{stakedCity}</label>
+                    </div>
+                </div>
+                }
+              </div>
+            </OutsideClickHandler>
+          </div>
+        )}
+        {showStakeCity && (
+          <div className="Backdrop-other-mint">
+            <OutsideClickHandler onOutsideClick={closeStakeCity}>
+              <div className="stake-room-opened">
+                <img className="stake-close-image" onClick={closeStakeCity} src={Close} />
+                <div className="stake-room-header">
+                  <h2>{currentStakeRoom == 1 && <span>MAHANOTHIA</span>}{currentStakeRoom == 2 && <span>SAN CHETOS</span>}{currentStakeRoom == 3 && <span>THE BASEMENT</span>}{currentStakeRoom == 4 && <span>MAGNEXIA</span>}{currentStakeRoom == 5 && <span>RAUDCHERI</span>} <button className="stake-now-button" onClick={stakeFromCity}>Stake Now</button></h2>
+                </div>
+                <div className="stake-room-stats">
+                  <div className="stake-first-stat">
+                    <label>Global<br/>Staked</label>
+                    <h2>0%</h2>
+                  </div>
+                  <div className="stake-first-stat">
+                    <label>Personal<br/>Staked</label>
+                    <h2>0%</h2>
+                  </div>
+                  <div className="stake-first-stat">
+                    <label>Personal Tokens<br/>Generated</label>
+                    <h2>0</h2>
+                  </div>
+                  <div className="stake-first-stat">
+                    <label>NFTs<br/>Staked</label>
+                    <h2>0</h2>
+                  </div>
+                </div>
+                <div className="stake-room-info" id="alpha-scroll">
+                  {currentStakeRoom == 1 && 
+                  <label className="stake-typing-text">The oldest of the cities, ruled by the wisest and most trusted royal family in the whole of Alphazex, the Avrupans. The culture, the architecture style, the communities, the military, all designed so perfectly that even after a thousand years, they stand the test of time. Crime doesn't exist in Mahanothia and so, once your character enters this stoic city for their mission they are sure to leave it with guaranteed rewards.</label>
+                  }
+                  {currentStakeRoom == 2 && 
+                  <label className="stake-typing-text">Ancestors of Jesse might refer to this city as a mix of Las Vegas, Monte Carlo, Cuba and Dubai. Filled with dazzling lights, gorgeous people and most importantly fuck tons of money, but equally surrounded with gambling dens, mafia and drugs. Just as quickly you can rise to top of the world in this city, you'll fall even quicker if you don't mind your steps. If you have guts enough to send your character to this city, you could become filthy fucking rich or dead fucking poor.</label>
+                  }
+                  {currentStakeRoom == 3 && 
+                  <label className="stake-typing-text">You can either choose to send your character on a mission or let them meditate in the silence of Alpha Basement.<br/>While in the basement, as meditation relaxes the body and strengthens the mind, the whole process takes a long amount of time, but remember, its rewards are simply unimaginable!<br/>The character doesn't earn any $GLCH token but they earn 2000 +RESPECT/ week.<br/>Since the whole process requires tons of focus and full commitment of the body and the soul, should you choose to send your character here, he'll only earn his rewards after a week. If you pull him out before the week ends, there'll be no rewards.</label>
+                  }
+                  {currentStakeRoom == 4 && 
+                  <label className="stake-typing-text">Not much is known about this mysterious city, except that no human has been known to have entered this city after its formation during the Great Cywar of 3333. Rumours say that only cyborgs live here and even that the city doesn't really follow a set of physical laws. You can only choose to send your character on a mission here if he is a cyborg (trait).</label>
+                  }
+                  {currentStakeRoom == 5 && 
+                  <label className="stake-typing-text">Once the most glowing and growing hub of Alphazex, Raudcheri has seen equal shares of glorious glamours and glitchy glooms. Ruled by the Nichas, the city structure and people were divided in the early riots of 4242. The north sporting the worst of the worst, the most corrupt and evil and the south blessed with angels, the most kind hearted. So if you choose to send your character on a mission in this city, there's no telling to what kind of adventures and people he'll have to deal with and so no guarantees of the amount of rewards.</label>
+                  }
+                </div>
+              </div>
+            </OutsideClickHandler>
+          </div>
+        )}
+        {showStakeDashboard && (
+          <div className="Backdrop-other-mint">
+            <OutsideClickHandler onOutsideClick={() => setShowStakeDashboard(false)}>
+              <div className="stake-room-opened">
+                <img className="stake-close-image" onClick={() => setShowStakeDashboard(false)} src={Close} />
+                <div className="stake-room-header">
+                  <h2 className="p-l-10-i">General Dashboard</h2>
+                </div>
+                <div className="gen-dashboard-scroller">
+                  <div className="gen-dahboard-stats">
+                    <div className="gen-dashboard-stats-left">
+                      <label>NFTs Staked</label>
+                      <h2>{stakedNfts.length}</h2>
+                    </div>
+                    <div className="gen-dashboard-stats-right">
+                      {stakedNfts && stakedNfts.length > 0 && stakedNfts.map(function (item:any, i:any) {
+                        return (
+                          <div className="nft-small-div">
+                            <img src={item.link} />
+                            <label>{item.name}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="gen-dahboard-stats">
+                    <div className="gen-dashboard-stats-left">
+                      <label>Tokens Generated</label>
+                      <h2>{stakedTokens}</h2>
+                    </div>
+                    <div className="gen-dashboard-stats-right">
+                      {stakedNfts && stakedNfts.length > 0 && stakedNfts.map(function (item:any, i:any) {
+                        return (
+                          <div className="nft-small-div">
+                            <img src={item.link} />
+                            <label>{item.name}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="gen-dahboard-stats">
+                    <div className="gen-dashboard-stats-left">
+                      <label>Respect Generated</label>
+                      <h2>{respectEarned}</h2>
+                    </div>
+                    <div className="gen-dashboard-stats-right">
+                      {stakedNfts && stakedNfts.length > 0 && stakedNfts.map(function (item:any, i:any) {
+                        return (
+                          <div className="nft-small-div">
+                            <img src={item.link} />
+                            <label>{item.name}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="gen-dahboard-stats">
+                    <div className="gen-dashboard-stats-left">
+                      <label>Multiplier Level</label>
+                      <h2>{multiplierLevel}</h2>
+                    </div>
+                    <div className="gen-dashboard-stats-right">
+                      {stakedNfts && stakedNfts.length > 0 && stakedNfts.map(function (item:any, i:any) {
+                        return (
+                          <div className="nft-small-div">
+                            <img src={item.link} />
+                            <label>{item.name}</label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+                
+              </div>
+            </OutsideClickHandler>
           </div>
         )}
         {showFirstPhil && (

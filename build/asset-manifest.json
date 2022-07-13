@@ -1,19 +1,19 @@
 {
   "files": {
-    "main.css": "/static/css/main.19b25133.chunk.css",
-    "main.js": "/static/js/main.fca9155f.chunk.js",
-    "main.js.map": "/static/js/main.fca9155f.chunk.js.map",
-    "runtime-main.js": "/static/js/runtime-main.9fc68b0c.js",
-    "runtime-main.js.map": "/static/js/runtime-main.9fc68b0c.js.map",
+    "main.css": "/static/css/main.765fb228.chunk.css",
+    "main.js": "/static/js/main.33f8c532.chunk.js",
+    "main.js.map": "/static/js/main.33f8c532.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.5c212d89.js",
+    "runtime-main.js.map": "/static/js/runtime-main.5c212d89.js.map",
     "static/css/2.84245a9a.chunk.css": "/static/css/2.84245a9a.chunk.css",
-    "static/js/2.ba094472.chunk.js": "/static/js/2.ba094472.chunk.js",
-    "static/js/2.ba094472.chunk.js.map": "/static/js/2.ba094472.chunk.js.map",
-    "static/js/3.ab995553.chunk.js": "/static/js/3.ab995553.chunk.js",
-    "static/js/3.ab995553.chunk.js.map": "/static/js/3.ab995553.chunk.js.map",
+    "static/js/2.c259b5b9.chunk.js": "/static/js/2.c259b5b9.chunk.js",
+    "static/js/2.c259b5b9.chunk.js.map": "/static/js/2.c259b5b9.chunk.js.map",
+    "static/js/3.4837131a.chunk.js": "/static/js/3.4837131a.chunk.js",
+    "static/js/3.4837131a.chunk.js.map": "/static/js/3.4837131a.chunk.js.map",
     "index.html": "/index.html",
     "static/css/2.84245a9a.chunk.css.map": "/static/css/2.84245a9a.chunk.css.map",
-    "static/css/main.19b25133.chunk.css.map": "/static/css/main.19b25133.chunk.css.map",
-    "static/js/2.ba094472.chunk.js.LICENSE.txt": "/static/js/2.ba094472.chunk.js.LICENSE.txt",
+    "static/css/main.765fb228.chunk.css.map": "/static/css/main.765fb228.chunk.css.map",
+    "static/js/2.c259b5b9.chunk.js.LICENSE.txt": "/static/js/2.c259b5b9.chunk.js.LICENSE.txt",
     "static/media/App.css": "/static/media/vault_room_mobile.ffbc1073.png",
     "static/media/Logowhite.png": "/static/media/Logowhite.450337f3.png",
     "static/media/Logowhite_cropped.png": "/static/media/Logowhite_cropped.cd0912f5.png",
@@ -35,10 +35,10 @@
     "static/media/yogantar.png": "/static/media/yogantar.83931a5d.png"
   },
   "entrypoints": [
-    "static/js/runtime-main.9fc68b0c.js",
+    "static/js/runtime-main.5c212d89.js",
     "static/css/2.84245a9a.chunk.css",
-    "static/js/2.ba094472.chunk.js",
-    "static/css/main.19b25133.chunk.css",
-    "static/js/main.fca9155f.chunk.js"
+    "static/js/2.c259b5b9.chunk.js",
+    "static/css/main.765fb228.chunk.css",
+    "static/js/main.33f8c532.chunk.js"
   ]
 }
