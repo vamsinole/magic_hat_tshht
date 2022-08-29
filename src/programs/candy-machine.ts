@@ -3,7 +3,7 @@ import * as anchor from '@project-serum/anchor';
 import { MintLayout, Token } from '@solana/spl-token';
 import { PublicKey, SystemProgram } from '@solana/web3.js';
 import { sendTransactions } from '../config/connection';
-import idlMagicHat from '../magic_hat.json';
+import idlMagicHat from '../idl/magic_hat.json';
 
 import {
   CIVIC,

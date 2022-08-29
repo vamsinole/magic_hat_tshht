@@ -22,7 +22,7 @@ code {
 
 @font-face {
   font-family: "Jack Armstrong";
-  src: url("./fonts/jackarmstrong.ttf") format("truetype");
+  src: url("../fonts/jackarmstrong.ttf") format("truetype");
 }
 
 .test-div {
@@ -102,7 +102,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/light_bg_new.png");
+  background: url("../assets/light_bg_new.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   background-position: center;
@@ -114,7 +114,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/light_bg_new.png");
+  background: url("../assets/light_bg_new.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -125,7 +125,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/vault_room_mobile.png");
+  background: url("../assets/vault_room_mobile.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -140,7 +140,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/stake_room_mobile.png");
+  background: url("../assets/stake_room_mobile.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -151,7 +151,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/team_room_mobile.png");
+  background: url("../assets/team_room_mobile.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -162,7 +162,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/Alpha_room_mobile.png");
+  background: url("../assets/Alpha_room_mobile.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -173,7 +173,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/room_with_no_items_but_doors.png");
+  background: url("../assets/room_with_no_items_but_doors.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -194,7 +194,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/alpha_room.png");
+  background: url("../assets/alpha_room.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -206,7 +206,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/team_room.png");
+  background: url("../assets/team_room.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -218,7 +218,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/stake_bg.png");
+  background: url("../assets/stake_bg.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -272,7 +272,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/opened_door.png");
+  background: url("../assets/opened_door.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -283,11 +283,14 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: black !important;
+  /* background: #e4d5d5 !important; */
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
   max-height: 100vh;
+  background: #000000;  /* fallback for old browsers */
+  background: -webkit-linear-gradient(to right, #434343, #000000);  /* Chrome 10-25, Safari 5.1-6 */
+  background: linear-gradient(to right, #434343, #000000); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
   /* transition: all 0.3s; */
   /* opacity: 1; */
   /* transition: all 1s; */
@@ -357,7 +360,7 @@ body {
   font-weight: 600;
   font-size: 18px;
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
   padding: 0;
   display: inline-block;
   margin-top: 0px;
@@ -382,7 +385,7 @@ body {
   font-weight: 600;
   font-size: 18px;
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
   padding: 0;
   display: inline-block;
   margin-top: 0px;
@@ -530,7 +533,7 @@ body {
   bottom: 19%;
   height: 13%;
   cursor: pointer;
-  background: url("./assets/hologram_cropped.png");
+  background: url("../assets/hologram_cropped.png");
   background-size: 100% 100%;
   padding: 8px;
   z-index: 9999999;
@@ -543,7 +546,7 @@ body {
   bottom: 19%;
   height: 13%;
   cursor: pointer;
-  background: url("./assets/hologram_cropped.png");
+  background: url("../assets/hologram_cropped.png");
 }
 
 .katana-image {
@@ -589,7 +592,7 @@ body {
   width: 43%;
   bottom: 0;
   height: 270px;
-  /* background: url('./assets/sopha_sider.png'); */
+  /* background: url('../assets/sopha_sider.png'); */
 }
 
 .bean-bag-image {
@@ -634,7 +637,7 @@ body {
   width: 66%;
   height: 76vh;
   top: 12vh;
-  background: url(./assets/biggerholo_cropped.png);
+  background: url(../assets/biggerholo_cropped.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 999999999999999;
@@ -646,7 +649,7 @@ body {
   width: 50%;
   height: 60vh;
   top: 20vh;
-  background: url(./assets/mint_bg.png);
+  background: url(../assets/mint_bg.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 999999999999999;
@@ -749,7 +752,7 @@ body {
   top: 20%;
   max-height: 70%;
   /* overflow-y: auto; */
-  background: url(./assets/alpha_text_bg.png);
+  background: url(../assets/alpha_text_bg.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 9999999999;
@@ -808,7 +811,7 @@ body {
   top: 33%;
   height: 75px;
   /* cursor: pointer; */
-  /* background: url(./assets/fan_spinning.mp4); */
+  /* background: url(../assets/fan_spinning.mp4); */
 }
 
 .light-flicker-image {
@@ -816,7 +819,7 @@ body {
   left: 19%;
   width: 138px;
   top: 34.2%;
-  background: url(./assets/cctvfile.gif);
+  background: url(../assets/cctvfile.gif);
   height: 100px;
   /* cursor: pointer; */
   /* z-index: 999999; */
@@ -895,7 +898,7 @@ body {
   position: absolute;
   left: 16%;
   bottom: -24px;
-  background: url(./assets/gun.png);
+  background: url(../assets/gun.png);
   height: 100px;
   width: 100px;
   background-size: cover;
@@ -1155,7 +1158,7 @@ body {
 
 @media screen and (max-width: 480px) {
   .main-bg {
-    background: url("./assets/light_bg_mobile.png") !important;
+    background: url("../assets/light_bg_mobile.png") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
@@ -1254,7 +1257,7 @@ body {
   }
 
   .alpha-room {
-    background: url("./assets/Alpha_wall_mobile.png") !important;
+    background: url("../assets/Alpha_wall_mobile.png") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
@@ -1266,7 +1269,7 @@ body {
   }
 
   .main-bg-after-door-open {
-    background: url("./assets/basement_mobile.png") !important;
+    background: url("../assets/basement_mobile.png") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
@@ -1310,7 +1313,7 @@ body {
     top: 100px!important;
     height: 76%!important;
     box-sizing: border-box;
-    background: url(./assets/mint_bg_mobile.png);
+    background: url(../assets/mint_bg_mobile.png);
     padding: 0 !important;
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -1455,7 +1458,7 @@ body {
   }
 
   .main-bg-with-opened-door {
-    background: url("./assets/opened_door_mobile.png") !important;
+    background: url("../assets/opened_door_mobile.png") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
@@ -1470,7 +1473,7 @@ body {
   }
 
   .main-bg-glitch {
-    background: url("./assets/light_bg_mobile.png") !important;
+    background: url("../assets/light_bg_mobile.png") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
@@ -1489,19 +1492,19 @@ body {
   }
 
   .glitchit {
-    background: url(./assets/light_bg_mobile.png) no-repeat 50% 0 !important;
+    background: url(../assets/light_bg_mobile.png) no-repeat 50% 0 !important;
     background-color: var(--blend-color-1) !important;
     background-size: 100% 100% !important;
   }
 
   .main-door-open-bg {
-    background: url("./assets/door_opening_mobile.mp4") !important;
+    background: url("../assets/door_opening_mobile.mp4") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
 
   .main-bg-dark {
-    background: url("./assets/dark_bg_mobile.png") !important;
+    background: url("../assets/dark_bg_mobile.png") !important;
     background-size: 100% 100% !important;
     background-repeat: no-repeat !important;
   }
@@ -1596,7 +1599,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/opened_door.png");
+  background: url("../assets/opened_door.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -1605,7 +1608,7 @@ body {
 }
 
 /* .main-bg-glitch {
-  background: linear-gradient(rgba(10,10,10,.6),rgba(0,0,0,.9)), repeating-linear-gradient(0, transparent, transparent 2px, black 3px, black 3px), url('./assets/light_bg_new.png');
+  background: linear-gradient(rgba(10,10,10,.6),rgba(0,0,0,.9)), repeating-linear-gradient(0, transparent, transparent 2px, black 3px, black 3px), url('../assets/light_bg_new.png');
   display: inline-block;
   height: 100vh;
   width: 100%;
@@ -1619,7 +1622,7 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  background: url("./assets/dark_bg_new.png");
+  background: url("../assets/dark_bg_new.png");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -1630,8 +1633,8 @@ body {
   display: inline-block;
   height: 100vh;
   width: 100%;
-  /* background: url('./assets/App.jpeg'); */
-  background: url("./assets/final_door_openingg.gif");
+  /* background: url('../assets/App.jpeg'); */
+  background: url("../assets/final_door_openingg.gif");
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -1643,7 +1646,7 @@ body {
   height: 100vh;
   width: 100%;
   background: black;
-  /* background: url('./assets/door_opening.mp4'); */
+  /* background: url('../assets/door_opening.mp4'); */
   background-size: 100% 100%;
   background-repeat: no-repeat;
   overflow-y: hidden;
@@ -1700,7 +1703,7 @@ body {
   height: 70%;
   width: 80%;
   left: 10%;
-  background: url(./assets/alpha_room.png);
+  background: url(../assets/alpha_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 99999999999;
@@ -1721,9 +1724,25 @@ body {
     margin-right: 15px;
   }
 }
-@media only screen and (min-width: 1200px) {
+@media only screen and (min-width: 360px) and (max-width:1000px) {
   #warning-message {
     /* display: none; */
+  }
+
+  .collection-details-basic {
+    width: 50% !important;
+  }
+
+  .Main-collection-upload-steps {
+    width: 90% !important;
+    margin-left: 5% !important;
+    margin-right: 5% !important;
+  }
+
+  .Create-whitelist-token-div {
+    width: 90% !important;
+    margin-left: 5% !important;
+    margin-right: 5% !important;
   }
 }
 
@@ -1791,7 +1810,7 @@ body {
   padding: 8px;
   width: 225px;
   font-size: 10px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
   color: #38f1ff;
   font-weight: 500;
   transition: visibility 0s, opacity 0.3s linear;
@@ -1804,7 +1823,7 @@ body {
   margin-top: 120px;
   color: #38f1ff;
   margin-bottom: 20px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
 }
 
 .m-t-10 {
@@ -2207,7 +2226,7 @@ form .button {
   left: calc(-1 * var(--gap-horizontal));
   width: calc(100% + var(--gap-horizontal) * 2);
   height: calc(100% + var(--gap-vertical) * 2);
-  background: url(./assets/light_bg_new.png) no-repeat 50% 0;
+  background: url(../assets/light_bg_new.png) no-repeat 50% 0;
   background-color: var(--blend-color-1);
   background-size: 100% 100%;
   transform: translate3d(0, 0, 0);
@@ -3513,7 +3532,7 @@ form .button {
   height: 40px;
   width: 40px;
   z-index: 999999999;
-  /* background: url(./assets/turn-back.png); */
+  /* background: url(../assets/turn-back.png); */
   /* filter: invert(96%) sepia(3%) saturate(21%) hue-rotate(8deg) brightness(94%) contrast(90%); */
 }
 
@@ -3802,7 +3821,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/top_left_room.png);
+  background: url(../assets/top_left_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3814,7 +3833,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/mid_top_room.png);
+  background: url(../assets/mid_top_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3826,7 +3845,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/left_bottom_room.png);
+  background: url(../assets/left_bottom_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3838,7 +3857,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/right_bottom_room.png);
+  background: url(../assets/right_bottom_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3850,7 +3869,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/right_top_room.png);
+  background: url(../assets/right_top_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3862,7 +3881,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/mid_bottom_room.png);
+  background: url(../assets/mid_bottom_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3874,7 +3893,7 @@ form .button {
   left: 0;
   right: 0;
   bottom: 0;
-  background: url(./assets/mid_mid_room.png);
+  background: url(../assets/mid_mid_room.png);
   background-size: 100% 100%;
   background-repeat: no-repeat;
   z-index: 1;
@@ -3915,7 +3934,7 @@ form .button {
   padding: 30px;
   box-sizing: border-box;
   cursor: pointer;
-  background: url(./assets/mint_bg.png);
+  background: url(../assets/mint_bg.png);
   background-size: 100% 100%;
   box-sizing: border-box;
 }
@@ -4629,7 +4648,7 @@ form .button {
   font-size: 16px;
   font-weight: 600;
   color: #78eefc;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
 }
 
 .m-t-b-5 {
@@ -4671,7 +4690,7 @@ form .button {
   left: 0;
   float: left;
   width: 100%;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
 }
 
 .bar {
@@ -4715,31 +4734,259 @@ form .button {
   font-size: 18px;
 }
 
+.connect-wallet-div {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.6);
+}
+
+.after-connect-div {
+  float: left;
+  width: 100%;
+  font-family: "Ubuntu Mono", monospace !important;
+}
+
+.launch-collection-div {
+  margin-top: 20px;
+  margin-bottom: 120px;
+  float: left;
+  width: 100%;
+  height: calc(100vh - 120px);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  overflow-y: auto;
+}
+
+.launch-collection-title {
+  float: left;
+  width: 100%;
+  text-align: center;
+  font-size: 24px;
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: white;
+}
+
+.Main-collection-upload-steps {
+  float: left;
+  width: 70%;
+  margin-left: 15%;
+  margin-right: 15%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.Create-whitelist-token-div {
+  float: left;
+  width: 50%;
+  margin-left: 25%;
+  margin-right: 25%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.upload-steps-header {
+  float: left;
+  width: calc(25% - 1px);
+  padding: 8px 12px;
+  background: white;
+  color: black;
+  font-weight: bold;
+  box-sizing: border-box;
+  text-align: center;
+  border-top: 1px solid black;
+  border-bottom: 1px solid black;
+  border-right: 1px solid black;
+  cursor: pointer;
+}
+
+.active-upload-steps-header {
+  color: white;
+  background: black;
+}
+
+.upload-steps-header label {
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.upload-steps-header:first-child {
+  border-radius: 8px 0 0 8px;
+  border-left: 1px solid black;
+}
+
+.last-child {
+  border-radius: 0 8px 8px 0;
+  border-right: 1px solid black;
+  width: 25% !important;
+}
+
+.upload-steps-header:last-child {
+  border-radius: 0 8px 8px 0;
+  border-right: 1px solid black;
+  width: 25% !important;
+}
+
+.collection-details-parent {
+  float: left;
+  width: 100%;
+  border-radius: 12px;
+  background-color: #1a1a1a;
+  padding: 15px;
+  box-sizing: border-box;
+  margin-top: 5px;
+  margin-bottom: 20px;
+  display: flex;
+}
+
+.colection-details-label {
+  color: #b3b3b3 !important;
+  padding: 0px;
+  position: relative;
+  display: block;
+  transform-origin: left top;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  transform: translate(0px, -1.5px) scale(0.75);
+  transition: color 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, transform 200ms cubic-bezier(0, 0, 0.2, 1) 0ms, max-width 200ms cubic-bezier(0, 0, 0.2, 1);
+  font-size: 15px !important;
+  margin-bottom: 5px;
+  margin-top: 20px;
+}
+
+.collection-details-input {
+  color: #e3e3e3;
+  background: #1a1a1a;
+  border: 0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  font-family: "Ubuntu Mono", monospace !important;
+  outline: none !important;
+}
+
+.hlaf-div {
+  float: left;
+  width: calc(50% - 10px);
+  margin-right: 10px;
+  text-align: center;
+}
+
+.hlaf-div:last-of-type {
+  margin-right: 0px !important;
+}
+
+.collection-details-textarea {
+  color: #e3e3e3;
+  background: #1a1a1a;
+  border: 0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+  width: 100%;
+  font-family: "Ubuntu Mono", monospace !important;
+  outline: none !important;
+  height: 60px;
+}
+
+.collection-details-basic {
+  /* background-color: #333; */
+  box-sizing: border-box;
+  float: left;
+  width: 30%;
+  padding: 10px;
+}
+
+.collection-details-full {
+  /* background-color: #333; */
+  box-sizing: border-box;
+  float: left;
+  width: 100%;
+  padding: 10px;
+}
+
+.collection-details-nft {
+  box-sizing: border-box;
+  float: left;
+  width: calc(70%);
+  padding: 10px;
+}
+
+.collection-details-basic-parent {
+  float: left;
+  width: 100%;
+  background-color: #333;
+  border-radius: 12px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.collection-details-nft-parent {
+  float: left;
+  width: 100%;
+  background-color: #333;
+  border-radius: 12px;
+  padding: 15px;
+  box-sizing: border-box;
+  height: 100%;
+}
+
+.nft-details-first {
+  width: calc(70% - 15px);
+  margin-right: 15px;
+  float: left;
+}
+
+.nft-details-second {
+  width: 30%;
+  float: left;
+}
+
+.collection-details-basic-parent label {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.collection-details-nft-parent label {
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+}
+
 .Connect-Wallet-btn {
   border-width: 0 !important;
-    border-radius: 4px !important;
-    background-color: #78eefc !important;
-    cursor: pointer !important;
-    color: #438482 !important;
-    font-weight: 600 !important;
-    font-size: 16px !important;
-    margin: 0 !important;
-    font-family: "Ubuntu Mono", monospace !important;
-    display: inline-block !important;
-    margin-top: 20px !important;
-    padding: 8px 15px !important;
-    line-height: 1.2 !important;
-    box-shadow: none !important;
-    text-transform: capitalize !important;
-    letter-spacing: inherit !important;
-    position: absolute !important;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 0;
-    margin: auto !important;
-    height: 50px;
-    width: 200px;
+  border-radius: 4px !important;
+  background-color: #78eefc !important;
+  cursor: pointer !important;
+  color: #438482 !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  margin: 0 !important;
+  font-family: "Ubuntu Mono", monospace !important;
+  display: inline-block !important;
+  margin-top: 20px !important;
+  padding: 8px 15px !important;
+  line-height: 1.2 !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  letter-spacing: inherit !important;
+  position: absolute !important;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  margin: auto !important;
+  height: 50px;
+  width: 200px;
 }
 
 .spacing-counts {
@@ -4763,7 +5010,7 @@ form .button {
   font-weight: 600;
   font-size: 14px;
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
   padding: 0;
   display: inline-block;
   margin-top: 10px;
@@ -4783,7 +5030,7 @@ form .button {
   font-weight: 600;
   font-size: 14px;
   margin: 0;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
   padding: 0;
   display: inline-block;
   margin-top: 10px;
@@ -4800,8 +5047,115 @@ form .button {
   text-align: center;
   color: #78eefc;
   font-size: 14px;
-  font-family: "Courier New", Courier, monospace;
+  font-family: "Ubuntu Mono", monospace;
   margin-top: 15px;
   margin-bottom: 15px;
   font-weight: 600;
+}
+
+.pad-header-div {
+  float: left;
+  width: 100%;
+  height: 80px;
+}
+
+.pad-header-account-div {
+  float: right;
+  height: 80px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-family: "Ubuntu Mono", monospace;
+  padding-left: 5px;
+  padding-right: 15px;
+  cursor: pointer;
+}
+
+.pad-account-image {
+  height: 40px;
+  width: 40px;
+  float: left;
+  margin-top: 10px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.pad-header-account-name {
+  height: 60px;
+  line-height: 60px;
+  vertical-align: middle;
+  font-family: "Ubuntu Mono", monospace;
+  font-size: 16px;
+  color: white;
+  max-width: 120px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow-x: hidden;
+  float: left;
+  cursor: pointer;
+}
+
+.down-arrow-icon {
+  height: 16px;
+  line-height: 16px;
+  vertical-align: middle;
+  margin-top: 22px;
+  filter: invert(100%) sepia(84%) saturate(2%) hue-rotate(194deg) brightness(109%) contrast(100%);
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.user-account-options {
+  position: absolute;
+  top: 84px;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 1pt 6pt rgb(0 0 0 / 15%);
+  right: 15px;
+  width: 250px;
+}
+
+.user-account-option {
+  font-size: 15px;
+  font-family: "Ubuntu Mono", monospace;
+  margin-top: 8px;
+  padding-top: 8px;
+  padding-bottom: 16px;
+  padding-left: 10px;
+  padding-right: 10px;
+  float: left;
+  width: 100%;
+  border-bottom: 1px solid black;
+  cursor: pointer;
+}
+
+.button-parent {
+  float: left;
+  width: 100%;
+  text-align: center;
+}
+
+.create-whitelist-btn {
+  border-width: 0 !important;
+  border-radius: 4px !important;
+  background-color: #78eefc !important;
+  cursor: pointer !important;
+  color: #438482 !important;
+  font-weight: 600 !important;
+  font-size: 16px !important;
+  margin: 0 !important;
+  font-family: "Ubuntu Mono", monospace !important;
+  display: inline-block !important;
+  margin-top: 20px !important;
+  padding: 8px 15px !important;
+  line-height: 1.2 !important;
+  box-shadow: none !important;
+  text-transform: capitalize !important;
+  letter-spacing: inherit !important;
+  height: 50px;
+  width: 200px;
+}
+
+.no-transform {
+  transform: none !important;
+  margin-bottom: 10px;
 }
