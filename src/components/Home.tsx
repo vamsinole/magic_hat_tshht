@@ -170,6 +170,7 @@ const Home = (props: HomeProps) => {
   const [tokenNameUtil, setTokenNameUtil] = useState("");
   const [tokenDescriptionUtil, setTokenDescriptionUtil] = useState("");
   const [tokenSymbolUtil, setTokenSymbolUtil] = useState("");
+  const [initialSupplyUtil, setInitialSupplyUtil] = useState("");
   const [mintAuthorityUtil, setMintAuthorityUtil] = useState(false);
   const [freezeAuthorityUtil, setFreezeAuthorityUtil] = useState(false);
 
@@ -269,6 +270,7 @@ const Home = (props: HomeProps) => {
     console.log(tokenSymbolUtil);
     console.log(mintAuthorityUtil);
     console.log(freezeAuthorityUtil);
+    console.log(initialSupplyUtil);
   }
 
   return (
@@ -394,6 +396,8 @@ const Home = (props: HomeProps) => {
                     <input placeholder="Name" value={tokenNameUtil} onChange={() => setTokenNameUtil(tokenNameUtil)} className="collection-details-input" />
                     <label className="colection-details-label">Token Symbol</label>
                     <input placeholder="Symbol" value={tokenSymbolUtil} onChange={() => setTokenSymbolUtil(tokenSymbolUtil)} className="collection-details-input" />
+                    <label className="colection-details-label">Initial Supply</label>
+                    <input placeholder="Symbol" value={initialSupplyUtil} onChange={() => setInitialSupplyUtil(initialSupplyUtil)} className="collection-details-input" />
                     <label className="colection-details-label">Description</label>
                     <textarea placeholder="Symbol" value={tokenDescriptionUtil} onChange={() => setTokenDescriptionUtil(tokenDescriptionUtil)} className="collection-details-textarea"></textarea>
                     <div className="hlaf-div">
